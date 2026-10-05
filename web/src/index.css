@@ -131,8 +131,30 @@
   animation: drift 34s ease-in-out infinite;
 }
 
+/* Active state for the mark: the detached dot breathes while downloads run.
+   Only the dot moves -- scaling a capsule would drag it off the fused neck or
+   slide the punched counter out of register. */
+@keyframes dot-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+
+.animate-dot-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dot-pulse 1.7s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-drift,
+  .animate-dot-pulse,
   .animate-gradient {
     animation: none;
   }

@@ -1,55 +1,58 @@
 import { cn } from "@heroui/react";
+import { useId } from "react";
 
 type MarkProps = {
   className?: string;
-  /** Slowly rotates the outer ring, used while downloads are running. */
+  /** Pulses the detached dot while downloads are running. */
   isActive?: boolean;
 };
 
 /**
- * The Soundify mark: a disc with sound radiating from it.
+ * The Soundify mark.
  *
- * Concentric geometry on a single axis, drawn with hairline strokes so it sits
- * at the same visual weight as the interface icons rather than shouting over
- * them.
+ * Two capsules read as a level meter, one punched with a circular counter. A
+ * blob fuses into the base of the first through a concave neck, and a detached
+ * dot sits clear of the form. The neck is a true tangent fillet: the two wedge
+ * paths carry the concave edges, while their straight edges run to the circle
+ * centres where the circles themselves cover them, so no seam can appear.
  */
 export function SoundifyMark({ className, isActive }: MarkProps) {
+  // Mask ids must be unique per instance or multiple marks on one page collide.
+  const maskId = useId();
+
   return (
     <svg
-      viewBox="0 0 32 32"
+      viewBox="0 0 64 64"
       fill="none"
       aria-hidden="true"
       className={cn("h-7 w-7", className)}
     >
-      {/* Disc */}
-      <circle
-        cx="13"
-        cy="16"
-        r="9"
-        stroke="currentColor"
-        strokeWidth="1.1"
-        opacity="0.55"
-        className={cn(
-          isActive &&
-            "origin-[13px_16px] animate-[spin_9s_linear_infinite] motion-reduce:animate-none",
-        )}
-      />
-      {/* Spindle */}
-      <circle cx="13" cy="16" r="2.15" fill="currentColor" />
-      {/* Radiating arcs */}
-      <path
-        d="M23.2 10.6a9.9 9.9 0 0 1 0 10.8"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-      <path
-        d="M27.4 7.6a15.2 15.2 0 0 1 0 16.8"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        opacity="0.5"
-      />
+      <defs>
+        <mask id={maskId}>
+          <rect width="64" height="64" fill="#fff" />
+          <circle cx="45" cy="26" r="4.6" fill="#000" />
+        </mask>
+      </defs>
+      <g fill="currentColor">
+        <path d="M 17.396 35.678 A 10 10 0 0 1 9.984 42.155 L 11.5 49.5 L 24 38 Z" />
+        <path d="M 25.764 44.774 A 10 10 0 0 0 18.694 51.622 L 11.5 49.5 L 24 38 Z" />
+        <circle cx="11.5" cy="49.5" r="7.5" />
+        <rect x="17" y="14" width="14" height="31" rx="7" />
+        <rect
+          x="38"
+          y="19"
+          width="14"
+          height="33"
+          rx="7"
+          mask={`url(#${maskId})`}
+        />
+        <circle
+          cx="56"
+          cy="12"
+          r="5"
+          className={cn(isActive && "animate-dot-pulse")}
+        />
+      </g>
     </svg>
   );
 }

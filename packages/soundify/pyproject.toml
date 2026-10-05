@@ -1,0 +1,33 @@
+[project]
+name = "soundify"
+version = "0.10.0"
+description = "Self-hosted YouTube Music downloader and library manager"
+dependencies = [
+  "ytmusicapi>=1.12.2",
+  "pydantic>=2.0.0",
+  "yt-dlp==2026.8.19",
+  "pathvalidate>=3.2.0",
+  "rapidfuzz>=3.0.0",
+  "mediafile>=0.12.0",
+  "httpx>=0.27.0",
+  "unidecode>=1.3.0",
+  # Pin to 1.x for older CPU compatibility (X86_V2 requirement in 2.x)
+  "numpy<2.0",
+  # JS runtime required by yt-dlp for YouTube's EJS challenge solver
+  "deno>=2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/guillevc/yubal"
+Repository = "https://github.com/guillevc/yubal"
+Issues = "https://github.com/guillevc/yubal/issues"
+
+[project.optional-dependencies]
+cli = ["typer>=0.21.1", "rich>=13.0.0"]
+
+[project.scripts]
+soundify = "soundify.cli:app"
+
+[build-system]
+requires = ["uv_build>=0.9.23,<0.12.0"]
+build-backend = "uv_build"

@@ -3,7 +3,7 @@ import { defineConfig } from "wxt";
 
 export default defineConfig({
   zip: {
-    name: "yubal-extension",
+    name: "soundify-extension",
     artifactTemplate: "{{name}}-{{packageVersion}}-{{browser}}.zip",
     sourcesTemplate: "{{name}}-{{packageVersion}}-sources.zip",
     zipSources: true,
@@ -14,13 +14,13 @@ export default defineConfig({
     developmentIndicator: false,
   },
   manifest: {
-    name: "yubal",
-    description: "Send YouTube URLs to your yubal instance",
-    homepage_url: "https://yubal.guillevc.dev",
+    name: "soundify",
+    description: "Send YouTube URLs to your soundify instance",
+    homepage_url: "https://soundify.guillevc.dev",
     permissions: ["storage", "activeTab", "tabs"],
     browser_specific_settings: {
       gecko: {
-        id: "yubal@guillevc.xyz",
+        id: "soundify@guillevc.xyz",
         // @ts-expect-error -- not yet in WXT's type definitions
         data_collection_permissions: {
           required: ["none"],

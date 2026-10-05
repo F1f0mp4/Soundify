@@ -5,18 +5,18 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 
 import pytest
-from yubal import PlaylistNotFoundError, UpstreamAPIError
-from yubal_api.api.exceptions import (
+from soundify import PlaylistNotFoundError, UpstreamAPIError
+from soundify_api.api.exceptions import (
     MetadataFetchError,
     SubscriptionConflictError,
     SubscriptionNotFoundError,
 )
-from yubal_api.db.subscription import Subscription, SubscriptionType
-from yubal_api.services.playlist_info_service import (
+from soundify_api.db.subscription import Subscription, SubscriptionType
+from soundify_api.services.playlist_info_service import (
     PlaylistInfoService,
     PlaylistMetadata,
 )
-from yubal_api.services.subscription_service import SubscriptionService
+from soundify_api.services.subscription_service import SubscriptionService
 
 
 @pytest.fixture

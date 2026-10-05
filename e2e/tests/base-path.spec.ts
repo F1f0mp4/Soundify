@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 // Use "./" (relative) paths so Playwright resolves them against baseURL.
-// With baseURL "http://host:port/yubal", "./" → "/yubal/", "./playlists" → "/yubal/playlists".
+// With baseURL "http://host:port/soundify", "./" → "/soundify/", "./playlists" → "/soundify/playlists".
 // With baseURL "http://host:port", "./" → "/", "./playlists" → "/playlists".
 
 test("page loads at root with no errors", async ({ page }) => {
@@ -47,11 +47,11 @@ test("client-side navigation does not stack paths", async ({
   expect(page.url()).toContain("/playlists");
 
   // Navigate back home
-  await page.getByRole("link", { name: "yubal" }).click();
+  await page.getByRole("link", { name: "soundify" }).click();
   await expect(
     page.getByRole("heading", { name: "Downloads" })
   ).toBeVisible();
-  // URL should match the app root — no stacking like /yubal/yubal/
+  // URL should match the app root — no stacking like /soundify/soundify/
   const rootUrl = baseURL!.endsWith("/") ? baseURL! : baseURL + "/";
   expect(page.url()).toBe(rootUrl);
 });

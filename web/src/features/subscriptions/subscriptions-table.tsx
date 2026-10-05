@@ -1,3 +1,4 @@
+import { Panel } from "@/components/common/panel";
 import type { Subscription } from "@/api/subscriptions";
 import { useTimeAgo } from "@/hooks/use-time-ago";
 import { Button, EmptyState, Spinner, Switch, Table } from "@heroui/react";
@@ -115,46 +116,61 @@ export function SubscriptionsTable({
   );
 
   return (
-    <Table>
-      <Table.ScrollContainer>
-        <Table.Content aria-label="Subscribed playlists">
-          <Table.Header columns={columns}>
-            {(column) => (
-              <Table.Column id={column.id} isRowHeader={column.id === "name"}>
-                {column.name}
-              </Table.Column>
-            )}
-          </Table.Header>
-          <Table.Body
-            items={isLoading ? [] : subscriptions}
-            renderEmptyState={() =>
-              isLoading ? (
-                <EmptyState className="flex min-h-[160px] w-full flex-col items-center justify-center gap-4 text-center">
-                  <Spinner size="sm" />
-                  <span className="text-muted text-sm">Loading...</span>
-                </EmptyState>
-              ) : (
-                <EmptyState className="flex min-h-[160px] w-full flex-col items-center justify-center gap-4 text-center">
-                  <InboxIcon className="text-muted size-6" />
-                  <span className="text-muted text-sm">
-                    No playlists registered
-                  </span>
-                </EmptyState>
-              )
-            }
+    // The table carries its own opaque surface; the panel supplies the frosted
+    // one, so the table chrome is cleared out to let it show through.
+    <Panel>
+      <Table className="border-0 bg-transparent">
+        <Table.ScrollContainer className="bg-transparent">
+          <Table.Content
+            aria-label="Subscribed playlists"
+            className="bg-transparent"
           >
-            {(subscription) => (
-              <Table.Row id={subscription.id}>
-                {columns.map((column) => (
-                  <Table.Cell key={column.id}>
-                    {renderCell(subscription, !!isSchedulerEnabled, column.id)}
-                  </Table.Cell>
-                ))}
-              </Table.Row>
-            )}
-          </Table.Body>
-        </Table.Content>
-      </Table.ScrollContainer>
-    </Table>
+            <Table.Header columns={columns}>
+              {(column) => (
+                <Table.Column
+                  id={column.id}
+                  isRowHeader={column.id === "name"}
+                  className="eyebrow bg-transparent font-normal"
+                >
+                  {column.name}
+                </Table.Column>
+              )}
+            </Table.Header>
+            <Table.Body
+              items={isLoading ? [] : subscriptions}
+              renderEmptyState={() =>
+                isLoading ? (
+                  <EmptyState className="flex min-h-[160px] w-full flex-col items-center justify-center gap-4 text-center">
+                    <Spinner size="sm" />
+                    <span className="text-muted text-sm">Loading...</span>
+                  </EmptyState>
+                ) : (
+                  <EmptyState className="flex min-h-[160px] w-full flex-col items-center justify-center gap-4 text-center">
+                    <InboxIcon className="text-muted size-6" />
+                    <span className="text-muted text-sm">
+                      No playlists registered
+                    </span>
+                  </EmptyState>
+                )
+              }
+            >
+              {(subscription) => (
+                <Table.Row id={subscription.id} className="bg-transparent">
+                  {columns.map((column) => (
+                    <Table.Cell key={column.id} className="text-sm font-light">
+                      {renderCell(
+                        subscription,
+                        !!isSchedulerEnabled,
+                        column.id,
+                      )}
+                    </Table.Cell>
+                  ))}
+                </Table.Row>
+              )}
+            </Table.Body>
+          </Table.Content>
+        </Table.ScrollContainer>
+      </Table>
+    </Panel>
   );
 }

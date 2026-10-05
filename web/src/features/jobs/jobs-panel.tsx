@@ -16,18 +16,20 @@ export function JobsPanel({ jobs, isLoading, onCancel, onDelete }: Props) {
   return (
     <Panel>
       <PanelHeader
-        leadingIcon={<DownloadIcon size={18} />}
+        leadingIcon={<DownloadIcon size={15} strokeWidth={1.25} />}
         badge={
           jobs.length > 0 && (
-            <span className="text-muted font-mono text-xs">
-              ({jobs.length})
+            <span className="text-muted tnum text-[0.6875rem]">
+              {jobs.length}
             </span>
           )
         }
       >
         Downloads
       </PanelHeader>
-      <PanelContent height="h-124" className="space-y-2">
+      {/* Grows with content up to a cap, so a single download does not sit in a
+          half-empty panel. */}
+      <PanelContent height="max-h-124 min-h-28" className="space-y-2">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
             <span className="text-muted font-mono text-sm">Loading...</span>

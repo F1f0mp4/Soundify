@@ -1,6 +1,6 @@
 import { storage } from "wxt/utils/storage";
 
-export const yubalUrl = storage.defineItem<string>("sync:yubalUrl");
-export const yubalUrlDraft = storage.defineItem<string>(
-  "session:yubalUrlDraft",
+export const soundifyUrl = storage.defineItem<string>("sync:soundifyUrl");
+export const soundifyUrlDraft = storage.defineItem<string>(
+  "session:soundifyUrlDraft",
 );

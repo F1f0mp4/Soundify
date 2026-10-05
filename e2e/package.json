@@ -1,5 +1,5 @@
 {
-  "name": "yubal-e2e",
+  "name": "soundify-e2e",
   "private": true,
   "scripts": {
     "install-browsers": "playwright install chromium --with-deps",

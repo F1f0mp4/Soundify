@@ -20,7 +20,7 @@ trim = true
 
 [remote.github]
 owner = "guillevc"
-repo = "yubal"
+repo = "soundify"
 
 [git]
 conventional_commits = true

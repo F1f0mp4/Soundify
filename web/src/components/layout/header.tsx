@@ -1,36 +1,27 @@
-import { listSubscriptions } from "@/api/subscriptions";
+import { Wordmark } from "@/components/brand/wordmark";
 import { ThemeToggler } from "@/components/layout/theme-toggler";
 import { CookieDropdown } from "@/features/cookies/cookie-dropdown";
 import { useCookies } from "@/features/cookies/use-cookies";
 import { useJobs } from "@/features/jobs/jobs-context";
 import { useVersionCheck } from "@/hooks/use-version-check";
-import {
-  Button,
-  buttonVariants,
-  Chip,
-  cn,
-  Link as HeroUILink,
-} from "@heroui/react";
+import { Button, buttonVariants, cn, Link as HeroUILink } from "@heroui/react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  Disc3Icon,
   DownloadIcon,
   ListMusicIcon,
   MenuIcon,
   RocketIcon,
-  StarIcon,
   XIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const navItems = [
   { label: "Downloads", startIcon: DownloadIcon, href: "/" },
-  { label: "My playlists", startIcon: ListMusicIcon, href: "/playlists" },
+  { label: "Playlists", startIcon: ListMusicIcon, href: "/playlists" },
 ];
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [subscriptionCount, setSubscriptionCount] = useState(0);
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
   const {
@@ -44,10 +35,6 @@ export function Header() {
   } = useCookies();
   const { data: versionInfo } = useVersionCheck();
   const { hasActiveJobs } = useJobs();
-
-  useEffect(() => {
-    listSubscriptions().then((subs) => setSubscriptionCount(subs.length));
-  }, []);
 
   // While the overlay menu is open, block page scroll and allow Escape to close
   // it (v2's Navbar did both for us).
@@ -70,88 +57,83 @@ export function Header() {
 
   return (
     <>
-      <nav className="border-separator bg-background/70 sticky top-0 z-40 w-full border-b backdrop-blur-lg">
-        <header className="mx-auto flex h-16 max-w-5xl items-center gap-2 px-4">
-          {/* Mobile menu toggle */}
-          <Button
-            isIconOnly
-            size="sm"
-            variant="ghost"
-            className="sm:hidden"
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isMenuOpen}
-            onPress={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? (
-              <XIcon className="h-5 w-5" />
-            ) : (
-              <MenuIcon className="h-5 w-5" />
-            )}
-          </Button>
+      {/* Transparent over the ambient backdrop: the header is part of the
+          atmosphere rather than a bar sitting on top of it. */}
+      <nav className="sticky top-0 z-40 w-full">
+        <header className="mx-auto grid h-20 max-w-5xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6">
+          {/* Left: navigation on desktop, menu toggle on mobile */}
+          <div className="flex items-center gap-1">
+            <Button
+              isIconOnly
+              size="sm"
+              variant="ghost"
+              className="icon-action sm:hidden"
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+              onPress={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? (
+                <XIcon className="h-5 w-5" strokeWidth={1.25} />
+              ) : (
+                <MenuIcon className="h-5 w-5" strokeWidth={1.25} />
+              )}
+            </Button>
 
-          {/* Brand */}
-          <Link to="/" className="mr-4 flex items-center">
-            <Disc3Icon
-              className={`text-accent h-7 w-7 ${hasActiveJobs ? "animate-[spin_4s_linear_infinite] motion-reduce:animate-none" : ""}`}
+            <ul className="hidden items-center gap-1 sm:flex">
+              {navItems.map((item) => {
+                const isItemActive = currentPath === item.href;
+                return (
+                  <li key={item.href}>
+                    <Link
+                      to={item.href}
+                      data-active={isItemActive || undefined}
+                      className="text-muted data-[active]:text-foreground data-[active]:glass-subtle hover:text-foreground inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs tracking-[0.12em] uppercase transition-colors"
+                    >
+                      <item.startIcon
+                        className="h-3.5 w-3.5"
+                        strokeWidth={1.25}
+                      />
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* Center: brand */}
+          <Link
+            to="/"
+            aria-label="Soundify home"
+            className="justify-self-center"
+          >
+            <Wordmark
+              isActive={hasActiveJobs}
+              markClassName="text-accent h-6 w-6"
+              className="max-[380px]:[&>span:last-child]:hidden"
             />
-            <p className="text-foreground ml-2 text-xl font-bold">yubal</p>
           </Link>
 
-          {/* Desktop navigation */}
-          <ul className="hidden items-center gap-2 sm:flex">
-            {navItems.map((item) => {
-              const isActive = currentPath === item.href;
-              return (
-                <li key={item.href}>
-                  <Link
-                    to={item.href}
-                    data-active={isActive || undefined}
-                    className="text-muted data-[active]:text-foreground inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium hover:opacity-80"
-                  >
-                    <item.startIcon className="h-4 w-4" />
-                    {item.label}
-                    {item.href === "/playlists" && subscriptionCount > 0 && (
-                      <Chip size="sm" variant="soft" className="font-mono">
-                        {subscriptionCount}
-                      </Chip>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* Actions */}
-          <div className="ml-auto flex items-center gap-2">
+          {/* Right: actions */}
+          <div className="flex items-center justify-end gap-1">
             {versionInfo?.updateAvailable && (
               <a
                 href={versionInfo.releaseUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={`Update available: ${versionInfo.latestVersion}`}
                 className={cn(
-                  buttonVariants({ size: "sm", variant: "ghost" }),
-                  "hidden font-mono text-sm text-green-600 sm:inline-flex dark:text-green-400",
+                  buttonVariants({
+                    size: "sm",
+                    variant: "ghost",
+                    isIconOnly: true,
+                  }),
+                  "icon-action text-accent hidden sm:inline-flex",
                 )}
               >
-                <RocketIcon className="h-4 w-4" />
-                {versionInfo.latestVersion}
+                <RocketIcon className="h-4 w-4" strokeWidth={1.25} />
               </a>
             )}
-            <a
-              href="https://github.com/guillevc/yubal"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                buttonVariants({ size: "sm", variant: "ghost" }),
-                "hidden text-sm sm:inline-flex",
-              )}
-            >
-              <StarIcon
-                className="h-4 w-4 fill-amber-400 text-amber-400 dark:fill-amber-300 dark:text-amber-300"
-                strokeWidth={1}
-              />
-              Star on GitHub
-            </a>
             <div className="hidden sm:block">
               <CookieDropdown
                 variant="desktop"
@@ -181,25 +163,26 @@ export function Header() {
           outside <nav>, whose backdrop-filter would otherwise make it the
           containing block for this fixed element. */}
       {isMenuOpen && (
-        <div className="border-separator bg-background/90 fixed inset-x-0 top-16 bottom-0 z-30 overflow-y-auto border-t backdrop-blur-lg sm:hidden">
-          <ul className="flex flex-col gap-4 p-6">
+        <div className="bg-background/80 fixed inset-x-0 top-20 bottom-0 z-30 overflow-y-auto backdrop-blur-2xl sm:hidden">
+          <ul className="flex flex-col gap-6 p-8">
             {navItems.map((item) => (
               <li key={item.href}>
                 <Link
                   to={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`flex w-full items-center gap-2 text-lg ${currentPath === item.href ? "text-accent" : "text-foreground"}`}
-                >
-                  {item.label}
-                  {item.href === "/playlists" && subscriptionCount > 0 && (
-                    <Chip size="sm" variant="soft" color="accent">
-                      {subscriptionCount}
-                    </Chip>
+                  className={cn(
+                    "flex w-full items-center gap-3 text-lg font-light tracking-[0.1em] uppercase",
+                    currentPath === item.href
+                      ? "text-accent"
+                      : "text-foreground",
                   )}
+                >
+                  <item.startIcon className="h-4 w-4" strokeWidth={1.25} />
+                  {item.label}
                 </Link>
               </li>
             ))}
-            <li>
+            <li className="pt-2">
               <CookieDropdown
                 variant="mobile"
                 cookiesConfigured={cookiesConfigured}
@@ -214,9 +197,9 @@ export function Header() {
                 href="https://github.com/guillevc/yubal"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-foreground w-full text-lg"
+                className="text-muted w-full text-sm"
               >
-                Star on GitHub
+                Built on yubal
                 <HeroUILink.Icon />
               </HeroUILink>
             </li>

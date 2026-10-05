@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "yubal-web",
+      "name": "soundify-web",
       "dependencies": {
         "@formkit/tempo": "^1.1.0",
         "@heroui/react": "^3.2.4",

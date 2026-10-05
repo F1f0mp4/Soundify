@@ -18,7 +18,7 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useLocalStorage<Theme>("yubal-theme", "dark");
+  const [theme, setTheme] = useLocalStorage<Theme>("soundify-theme", "dark");
 
   const toggle = useCallback(
     () => setTheme((prev) => (prev === "dark" ? "light" : "dark")),

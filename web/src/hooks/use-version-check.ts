@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const CACHE_KEY = "yubal-version-check";
+const CACHE_KEY = "soundify-version-check";
 const CACHE_DURATION_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 type VersionInfo = {

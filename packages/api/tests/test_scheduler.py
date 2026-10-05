@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 from zoneinfo import ZoneInfo
 
 import pytest
-from yubal_api.services.scheduler import Scheduler
+from soundify_api.services.scheduler import Scheduler
 
 
 @pytest.fixture

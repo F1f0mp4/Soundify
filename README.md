@@ -1,31 +1,30 @@
 <div align="center">
 
-# yubal
+# Soundify
 
-Self-hosted YouTube Music downloader. Paste a link, get a tagged, organized library.
+**Self-hosted music library.** Paste a link — YouTube Music or Spotify — and get tagged, organised audio.
 
-Scheduled sync. Smart deduplication. Media server ready. Browser extension included.
-
-[![CI](https://github.com/guillevc/yubal/actions/workflows/ci.yaml/badge.svg)](https://github.com/guillevc/yubal/actions/workflows/ci.yaml)
-[![Release](https://img.shields.io/github/v/release/guillevc/yubal)](https://github.com/guillevc/yubal/releases)
-[![Firefox Add-on](https://img.shields.io/amo/v/yubal?label=firefox%20add-on&logo=firefox&logoColor=white&color=orange)](https://addons.mozilla.org/firefox/addon/yubal/)
-[![Chrome Extension](https://img.shields.io/github/v/release/guillevc/yubal?filter=ext-v*&label=chrome%20extension&logo=googlechrome&logoColor=white&color=orange)](https://github.com/guillevc/yubal/releases?q=🧩)
-[![Docker](https://img.shields.io/badge/ghcr.io-blue?logo=docker&logoColor=white)](https://ghcr.io/guillevc/yubal)
-[![codecov](https://codecov.io/gh/guillevc/yubal/branch/master/graph/badge.svg)](https://codecov.io/gh/guillevc/yubal)
-
-<picture>
-  <img src="docs/demo.gif" alt="yubal demo" width="75%">
-</picture>
+Scheduled sync · synced lyrics · media-server ready
 
 </div>
 
 <br/>
 
-## 📖 How It Works
+## What it is
 
-Downloading music is easy. _Organizing_ it is the hard part.
+Soundify is a fork of [yubal](https://github.com/guillevc/yubal) by [@guillevc](https://github.com/guillevc) (MIT), rebuilt around three changes:
 
-yubal takes a YouTube Music URL and produces a clean, tagged music library:
+| | |
+| --- | --- |
+| **Downloads that actually work** | yt-dlp is pinned to the YouTube clients that serve audio without a PO token. Upstream leaves client choice to yt-dlp, which switches to `web_creator`/`web_music` as soon as cookies are present — both need a token, so every track fails with HTTP 403. |
+| **Spotify links** | Paste a Spotify track, album or playlist. Soundify reads the track list from Spotify's public embed pages (no API key, no account), matches each track on YouTube Music, and tags from there. |
+| **A new interface** | Dark glass over an ambient backdrop, ring metrics, an original identity. |
+
+Everything else — tagging, deduplication, scheduling, the M3U layout, the browser extension — is upstream's work.
+
+## How it works
+
+Downloading music is easy. _Organising_ it is the hard part. Soundify produces a clean, tagged library:
 
 ```
 data/
@@ -33,221 +32,136 @@ data/
 │   └── 1973 - The Dark Side of the Moon/
 │       ├── 01 - Speak to Me.opus
 │       ├── 01 - Speak to Me.lrc
-│       ├── 02 - Breathe.opus
-│       ├── 02 - Breathe.lrc
 │       └── cover.jpg
-│
-├── Radiohead/
-│   └── 1997 - OK Computer/
-│       ├── 01 - Airbag.opus
-│       ├── 01 - Airbag.lrc
-│       ├── 02 - Paranoid Android.opus
-│       ├── 02 - Paranoid Android.lrc
-│       └── cover.jpg
-│
 └── _Playlists/
     ├── My Favorites [n2g-XhDv].m3u
     └── My Favorites [n2g-XhDv].jpg
 ```
 
-When downloading a playlist, each track lives in its album folder; the M3U file references it:
+Each track lives in its album folder; playlists reference it, so a track appearing in ten playlists is stored once:
 
 ```m3u
 #EXTM3U
 #EXTINF:239,Pink Floyd - Breathe
 ../Pink Floyd/1973 - The Dark Side of the Moon/02 - Breathe.opus
-#EXTINF:386,Radiohead - Paranoid Android
-../Radiohead/1997 - OK Computer/02 - Paranoid Android.opus
 ```
 
-## ✨ Features
+## Features
 
-- **Web UI** — Real-time progress, job queue, works on mobile
-- **Albums, playlists & tracks** — Paste any YouTube Music link, get organized files
-- **Scheduled sync** — Subscribe to playlists; new tracks appear in your library automatically
-- **Smart deduplication** — Same track across 10 playlists? Stored once, referenced everywhere
-- **Reliable downloads** — Automatic retry on failures, graceful cancellation
-- **Automatic lyrics** — Synced `.lrc` files for karaoke-style playback in supported players
-- **ReplayGain tagging** — Track gain for consistent volume; album gain when downloading complete albums
-- **Format options** — `opus` (best quality/size), mp3, or m4a — direct download when available, transcoded otherwise
-- **Media server ready** — Tested with [Navidrome, Jellyfin, and Gonic](#-media-server-integration)
-- **[CLI](packages/yubal/src/yubal/cli/README.md)** — Download and inspect metadata from the terminal
+- **Web UI** — real-time progress, job queue, works on mobile
+- **YouTube Music & Spotify** — albums, playlists and single tracks
+- **Scheduled sync** — subscribe to playlists; new tracks arrive automatically
+- **Smart deduplication** — one file, referenced everywhere
+- **Synced lyrics** — `.lrc` files from lrclib.net, with a YouTube Music fallback
+- **ReplayGain** — track gain, plus album gain on complete albums
+- **Format options** — `opus` (best quality/size), `mp3`, `m4a` — copied directly when possible, transcoded otherwise
+- **Media server ready** — Navidrome, Jellyfin, Gonic
+- **CLI** — [download and inspect metadata from the terminal](packages/soundify/src/soundify/cli/README.md)
 
-## 🧩 Browser Extension
-
-Download tracks and subscribe to playlists directly from YouTube and YouTube Music without leaving the page.
-
-<p>
-  <img src="https://raw.githubusercontent.com/guillevc/yubal/refs/heads/master/extension/docs/images/extension-track.png" alt="Track view" width="32%">
-  <img src="https://raw.githubusercontent.com/guillevc/yubal/refs/heads/master/extension/docs/images/extension-playlist.png" alt="Playlist view" width="32%">
-  <img src="https://raw.githubusercontent.com/guillevc/yubal/refs/heads/master/extension/docs/images/extension-settings.png" alt="Settings view" width="32%">
-</p>
-<p>
-  <a href="https://addons.mozilla.org/addon/yubal/"><img src="https://img.shields.io/badge/Firefox-get_add--on-FF7139?logo=firefox&logoColor=white&style=for-the-badge" alt="Get the add-on for Firefox"></a>
-  <a href="https://github.com/guillevc/yubal/releases?q=🧩"><img src="https://img.shields.io/badge/Chrome-manual_install-4285F4?logo=googlechrome&logoColor=white&style=for-the-badge" alt="Chrome manual install"></a>
-</p>
-
-More info in the extension's [README.md](https://github.com/guillevc/yubal/blob/master/extension/README.md).
-
-## 🚀 Quick Start
-
-```yaml
-# compose.yaml
-services:
-  yubal:
-    image: ghcr.io/guillevc/yubal:latest
-    container_name: yubal
-    ports:
-      - 8000:8000
-    environment:
-      PUID: 1000
-      PGID: 1000
-      YUBAL_SCHEDULER_CRON: "0 0 * * *"
-      YUBAL_DOWNLOAD_UGC: false
-      YUBAL_TZ: UTC
-    volumes:
-      - ./data:/app/data
-      - ./config:/app/config
-    restart: unless-stopped
-```
-
-> [!TIP]
-> **Volume permissions:** Set `PUID`/`PGID` to match your host user (run `id` to check). This also ensures compatibility with podman rootless. If `/app/data` is an NFS/Unraid mount that does not allow `chown`, make sure it is already writable by the configured `PUID`/`PGID`.
+## Quick start
 
 ```bash
 docker compose up -d
-# Open http://localhost:8000
+# http://localhost:8000
 ```
 
-> **Unraid?** Use the [community Docker template](https://github.com/SerpentDrago/UnraidDockerTemplates/tree/main/yubal) by [@SerpentDrago](https://github.com/SerpentDrago) ([unraid forum thread](https://forums.unraid.net/topic/197157-support-yubal-self-hosted-youtube-music-downloader/)).
+The bundled `compose.yaml` builds from source. Set `PUID`/`PGID` to match your host user (run `id`) so downloaded files are owned by you.
 
-## ⚙️ Configuration
+## Configuration
 
-| Variable                        | Description                                       | Default (Docker) |
-| ------------------------------- | ------------------------------------------------- | ---------------- |
-| `PUID`                          | User ID for file ownership                        | `1000`           |
-| `PGID`                          | Group ID for file ownership                       | `1000`           |
-| `YUBAL_AUDIO_FORMAT`            | `opus`, `mp3`, or `m4a`                           | `opus`           |
-| `YUBAL_AUDIO_QUALITY`           | Transcode quality (0=best, 10=worst)              | `0`              |
-| `YUBAL_SCHEDULER_ENABLED`       | Enable automatic scheduled sync                   | `true`           |
-| `YUBAL_SCHEDULER_CRON`          | Cron schedule for auto-sync                       | `0 0 * * *`      |
-| `YUBAL_FETCH_LYRICS`            | Fetch lyrics from lrclib.net                      | `true`           |
-| `YUBAL_YTMUSIC_LYRICS_FALLBACK` | Fall back to YouTube Music lyrics on lrclib miss  | `true`           |
-| `YUBAL_DOWNLOAD_UGC`            | Download user-generated content to `_Unofficial/` | `false`          |
-| `YUBAL_REPLAYGAIN`              | Apply track gain; album gain for complete albums  | `true`           |
-| `YUBAL_JOB_TIMEOUT_SECONDS`     | Job execution timeout in seconds                  | `1800`           |
-| `YUBAL_BASE_PATH`               | URL base path for reverse proxy subfolder         | —                |
-| `YUBAL_TZ`                      | Timezone (IANA format)                            | `UTC`            |
+| Variable | Description | Default |
+| --- | --- | --- |
+| `PUID` / `PGID` | User/group ID for file ownership | `1000` |
+| `SOUNDIFY_AUDIO_FORMAT` | `opus`, `mp3`, or `m4a` | `opus` |
+| `SOUNDIFY_AUDIO_QUALITY` | Transcode quality (0=best, 10=worst) | `0` |
+| `SOUNDIFY_PLAYER_CLIENTS` | yt-dlp YouTube clients, in order | `["visionos","web_embedded"]` |
+| `SOUNDIFY_POT_PROVIDER_URL` | PO token provider, e.g. `http://bgutil:4416` | — |
+| `SOUNDIFY_DOWNLOAD_SLEEP_INTERVAL` | Seconds between downloads | `0` |
+| `SOUNDIFY_SCHEDULER_ENABLED` | Automatic scheduled sync | `true` |
+| `SOUNDIFY_SCHEDULER_CRON` | Cron schedule for auto-sync | `0 0 * * *` |
+| `SOUNDIFY_FETCH_LYRICS` | Fetch lyrics from lrclib.net | `true` |
+| `SOUNDIFY_DOWNLOAD_UGC` | Download user uploads to `_Unofficial/` | `false` |
+| `SOUNDIFY_REPLAYGAIN` | Apply ReplayGain tags | `true` |
+| `SOUNDIFY_TZ` | Timezone (IANA) | `UTC` |
 
 <details>
 <summary>All options</summary>
 
-| Variable                | Description                         | Default (Docker) |
-| ----------------------- | ----------------------------------- | ---------------- |
-| `YUBAL_HOST`            | Server bind address                 | `127.0.0.1`      |
-| `YUBAL_PORT`            | Server port                         | `8000`           |
-| `YUBAL_DATA`            | Music library output                | `/app/data`      |
-| `YUBAL_CONFIG`          | Config directory                    | `/app/config`    |
-| `YUBAL_LOG_LEVEL`       | `DEBUG`, `INFO`, `WARNING`, `ERROR` | `INFO`           |
-| `YUBAL_ASCII_FILENAMES` | Transliterate unicode to ASCII      | `false`          |
-| `YUBAL_CORS_ORIGINS`    | Allowed CORS origins                | `["*"]`          |
-| `YUBAL_TEMP`            | Temp directory                      | System temp      |
+| Variable | Description | Default |
+| --- | --- | --- |
+| `SOUNDIFY_HOST` | Server bind address | `127.0.0.1` |
+| `SOUNDIFY_PORT` | Server port | `8000` |
+| `SOUNDIFY_DATA` | Music library output | `/app/data` |
+| `SOUNDIFY_CONFIG` | Config directory | `/app/config` |
+| `SOUNDIFY_LOG_LEVEL` | `DEBUG`, `INFO`, `WARNING`, `ERROR` | `INFO` |
+| `SOUNDIFY_ASCII_FILENAMES` | Transliterate unicode to ASCII | `false` |
+| `SOUNDIFY_BASE_PATH` | URL base path for reverse-proxy subfolders | — |
+| `SOUNDIFY_CORS_ORIGINS` | Allowed CORS origins | `["*"]` |
+| `SOUNDIFY_JOB_TIMEOUT_SECONDS` | Job execution timeout | `1800` |
+| `SOUNDIFY_TEMP` | Temp directory | System temp |
 
 </details>
 
-## 🔌 Media Server Integration
+## Cookies (optional)
 
-Tested with Navidrome, Jellyfin, and Gonic. Artists link correctly, even on tracks with multiple artists.
+Needed for age-restricted tracks, private playlists and your **Liked Music** (`list=LM`). A **free** signed-in account is enough — Premium is never required.
 
-| Server        | Artist linking                                                | Playlists |
-| ------------- | ------------------------------------------------------------- | :-------: |
-| **Navidrome** | ✅ Works out of the box                                       |    ✅     |
-| **Jellyfin**  | ⚙️ Enable "Use non-standard artists tags" in library settings |    ✅     |
-| **Gonic**     | ⚙️ Set `GONIC_MULTI_VALUE_ARTIST=multi`                       |    ❌     |
-
-✅ Supported · ⚙️ Requires configuration · ❌ Not supported
-
-> [!TIP]
-> **Recommended stack:** yubal + [Navidrome](https://www.navidrome.org/) gives you a self-hosted music streaming setup. Add a client like [Symfonium](https://symfonium.app/) (Android), [Amperfy](https://github.com/BLeeEZ/amperfy) or [Arpeggi](https://github.com/argie-w/Arpeggi-App) (iOS), or [Supersonic](https://github.com/dweymouth/supersonic) (desktop) to listen anywhere.
+Place a `cookies.txt` at `config/ytdlp/cookies.txt`, or upload it through the web UI.
 
 <details>
-<summary>Detailed setup guides</summary>
+<summary>Exporting from Safari on macOS</summary>
 
-### Navidrome
+Safari stores cookies in a binary format, so yt-dlp has to convert them.
 
-No configuration required. Optionally, make imported playlists public:
-
-```bash
-ND_DEFAULTPLAYLISTPUBLICVISIBILITY=true
-```
-
-See [Navidrome docs](https://www.navidrome.org/docs/usage/configuration/options/).
-
-### Jellyfin
-
-For multi-artist support:
-
-1. **Dashboard → Libraries → Music Library → Manage Library**
-2. Check **Use non-standard artists tags**
-3. Save and rescan
-
-### Gonic
-
-For artist linking:
+1. System Settings → Privacy & Security → **Full Disk Access** → enable Terminal, then restart Terminal.
+2. Sign into YouTube in Safari.
+3. Run:
 
 ```bash
-GONIC_MULTI_VALUE_ARTIST=multi
-GONIC_MULTI_VALUE_ALBUM_ARTIST=multi
+pipx run yt-dlp --cookies-from-browser safari --cookies ~/Downloads/cookies.txt --skip-download "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 ```
 
-M3U playlists are not supported ([pending PR](https://github.com/sentriz/gonic/pull/537)).
+Firefox is easier if Safari gives you trouble: `--cookies-from-browser firefox`, no Full Disk Access needed.
 
 </details>
 
-## 🍪 Cookies (Optional)
-
-Need age-restricted content, private playlists, your **Liked Music** (`list=LM`), or Premium quality? Add your cookies:
-
-1. Export `https://www.youtube.com/` cookies with a browser extension ([yt-dlp guide](https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp))
-2. Place at `config/ytdlp/cookies.txt` or upload via the web UI
-
 > [!CAUTION]
-> Cookie usage may trigger stricter rate limiting and could put your account at risk. See [#3](https://github.com/guillevc/yubal/issues/3) and [yt-dlp wiki](https://github.com/yt-dlp/yt-dlp/wiki/Extractors#youtube).
+> `cookies.txt` is credential-equivalent — anyone holding it is signed in as you. Cookie use can also trigger stricter rate limiting and put the account at risk, so consider a secondary account.
 
-## 🗺️ Roadmap
+## Age-restricted tracks
 
-- [ ] Flat folder mode
-- [ ] Post-download webhooks
-- [ ] New music automatic discovery
-- [x] Browser extension ([v0.7.0](https://github.com/guillevc/yubal/releases/tag/v0.7.0))
-- [x] UGC tracks — remixes, unofficial content ([v0.5.0](https://github.com/guillevc/yubal/releases/tag/v0.5.0))
-- [x] Auto-sync playlists ([v0.4.0](https://github.com/guillevc/yubal/releases/tag/v0.4.0))
-- [x] Automatic lyrics (.lrc) ([v0.3.0](https://github.com/guillevc/yubal/releases/tag/v0.3.0))
-- [x] Single track downloads ([v0.3.0](https://github.com/guillevc/yubal/releases/tag/v0.3.0))
-- [x] Playlist support with M3U generation ([v0.2.0](https://github.com/guillevc/yubal/releases/tag/v0.2.0))
+Measured on 2026-09-12, so you know what to expect:
 
-## 💜 Support
+- Tracks that are **embeddable** download with **no account at all** (the `web_embedded` client handles them).
+- Tracks behind *"Sign in to confirm your age"* need cookies from a free signed-in account. A PO token does **not** help here — the `mweb` client returns the identical error with and without one, so the optional bgutil sidecar in `compose.yaml` stays off by default.
 
-yubal is free, open-source, and built by one person. If it saves you time, consider supporting development:
+## Spotify support
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/guillevc) [![Sponsor](https://img.shields.io/badge/sponsor-GitHub-ea4aaa?logo=github)](https://github.com/sponsors/guillevc) [![BTC](https://img.shields.io/badge/BTC-on--chain_%26_Lightning-f7931a?logo=bitcoin)](https://guillevc.dev)
+Spotify's Web API is not used: since February 2026 a Development Mode app only works while its owner holds Spotify Premium, and editorial `37i9dQZF1D…` playlists have returned 404 for new apps since November 2024. Soundify reads the public embed pages instead, which need no credentials and still serve editorial playlists.
 
-A ⭐ also helps others find the project!
+Album track lists come back complete. **Playlist embeds cap at 100 tracks**, so longer playlists are truncated and flagged in the logs. Titles, artists and durations drive the YouTube Music match; album, track number, year and cover art are taken from YouTube Music afterwards.
 
-## 📈 Star History
+## Media server integration
 
-[![Star History Chart](https://star-history.dera.page/svg?repos=guillevc/yubal&type=Date)](https://star-history.dera.page/#guillevc/yubal&Date)
+| Server | Artist linking | Playlists |
+| --- | --- | :---: |
+| **Navidrome** | Works out of the box | ✅ |
+| **Jellyfin** | Enable "Use non-standard artists tags" in library settings | ✅ |
+| **Gonic** | Set `GONIC_MULTI_VALUE_ARTIST=multi` | ❌ |
 
-## 🙏 Acknowledgments
+> [!NOTE]
+> ReplayGain uses `rsgain`, which the Dockerfile installs for amd64 only. On arm64 (Apple Silicon) it is unavailable and the step is skipped.
 
-Built with [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ytmusicapi](https://github.com/sigma67/ytmusicapi).
+## Credits
 
-Thanks to everyone who's starred, shared, reported bugs, suggested features, or [supported the project](https://ko-fi.com/guillevc) 💝
+Built on [yubal](https://github.com/guillevc/yubal) by [@guillevc](https://github.com/guillevc) — the tagging, organisation, scheduling and extension are all their work. If this is useful to you, [support the upstream project](https://ko-fi.com/guillevc).
+
+Powered by [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ytmusicapi](https://github.com/sigma67/ytmusicapi). Lyrics from [LRCLIB](https://lrclib.net).
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) — as inherited from yubal, whose copyright notice is retained.
 
 ---
 
-<sub>For personal archiving only. Comply with YouTube's Terms of Service and applicable copyright laws.</sub>
+<sub>For personal archiving only. Comply with the terms of service of the platforms you use and with applicable copyright law.</sub>

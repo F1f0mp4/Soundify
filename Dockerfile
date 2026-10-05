@@ -25,7 +25,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends git \
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY packages/ ./packages/
-RUN uv sync --package yubal-api --no-dev --frozen --no-cache --no-editable
+RUN uv sync --package soundify-api --no-dev --frozen --no-cache --no-editable
+
+# PO token provider plugin, installed outside the locked dependency set so
+# uv.lock stays in sync with upstream. It lets yt-dlp mint GVS PO tokens via the
+# bgutil sidecar, which unlocks the mweb client for age-restricted tracks.
+RUN uv pip install --python /app/.venv --no-cache bgutil-ytdlp-pot-provider
 
 # Final runtime image
 FROM python:3.12-slim-bookworm
@@ -71,21 +76,21 @@ RUN set -eux \
     && rm -rf /var/lib/apt/lists/* \
     #
     # --- Non-root user ---
-    && groupadd -g 1000 yubal \
-    && useradd -u 1000 -g yubal -d /app -s /sbin/nologin yubal
+    && groupadd -g 1000 soundify \
+    && useradd -u 1000 -g soundify -d /app -s /sbin/nologin soundify
 
 # Copy built artifacts
-COPY --from=python-builder --chown=yubal:yubal /app/.venv /app/.venv
-COPY --from=web-builder --chown=yubal:yubal /app/web/dist ./web/dist
+COPY --from=python-builder --chown=soundify:soundify /app/.venv /app/.venv
+COPY --from=web-builder --chown=soundify:soundify /app/web/dist ./web/dist
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    YUBAL_ROOT=/app \
-    YUBAL_HOST=0.0.0.0 \
-    YUBAL_PORT=8000
+    SOUNDIFY_ROOT=/app \
+    SOUNDIFY_HOST=0.0.0.0 \
+    SOUNDIFY_PORT=8000
 
 EXPOSE 8000
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["python", "-m", "yubal_api"]
+CMD ["python", "-m", "soundify_api"]

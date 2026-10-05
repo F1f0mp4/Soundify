@@ -1,12 +1,25 @@
-import { Card, cn, ScrollShadow } from "@heroui/react";
+import { cn, ScrollShadow } from "@heroui/react";
 import type { HTMLAttributes, ReactNode, Ref } from "react";
 
 type Props = HTMLAttributes<HTMLElement> & {
   children: ReactNode;
 };
 
+/**
+ * A floating frosted surface.
+ *
+ * Deliberately a plain element rather than HeroUI's Card: the card ships an
+ * opaque background that would have to be fought off on every instance, and the
+ * whole design depends on the ambient backdrop showing through.
+ */
 export function Panel({ children, className }: Props) {
-  return <Card className={className}>{children}</Card>;
+  return (
+    <section
+      className={cn("glass overflow-hidden rounded-[1.75rem]", className)}
+    >
+      {children}
+    </section>
+  );
 }
 
 type HeaderProps = {
@@ -23,13 +36,13 @@ export function PanelHeader({
   className,
 }: HeaderProps) {
   return (
-    <Card.Header className={className}>
-      <div className="text-muted flex w-full items-center gap-2">
-        {leadingIcon && <span>{leadingIcon}</span>}
-        <span className="text-xs tracking-wider uppercase">{children}</span>
+    <div className={cn("px-6 pt-5 pb-4", className)}>
+      <div className="text-muted flex w-full items-center gap-2.5">
+        {leadingIcon && <span className="opacity-70">{leadingIcon}</span>}
+        <span className="eyebrow">{children}</span>
         {badge}
       </div>
-    </Card.Header>
+    </div>
   );
 }
 
@@ -47,18 +60,17 @@ export function PanelContent({
   ...props
 }: ContentProps) {
   return (
-    // Negative margin cancels the card's padding so the scroll area spans the
-    // full card width: the scrollbar sits on the card border and the scroll
-    // shadows fade across the whole card. Padding moves onto the scroller.
-    <Card.Content className="-mx-4">
+    // Padding lives on the scroller so the scrollbar sits on the panel edge and
+    // the scroll shadows fade across the full width.
+    <div className="pb-5">
       <ScrollShadow
         ref={ref}
-        className={cn(height, "px-4", className)}
+        className={cn(height, "px-6", className)}
         offset={2}
         {...props}
       >
         {children}
       </ScrollShadow>
-    </Card.Content>
+    </div>
   );
 }

@@ -34,7 +34,7 @@ esac
 
 if [ "$(id -u)" = "0" ]; then
     # Create required directories
-    mkdir -p /app/config/yubal /app/config/ytdlp /app/data
+    mkdir -p /app/config/soundify /app/config/ytdlp /app/data
 
     # Fix ownership (non-recursive on /app/data to avoid slow startup with large libraries)
     chown "$PUID:$PGID" /app/data || warn_chown /app/data
@@ -45,5 +45,5 @@ if [ "$(id -u)" = "0" ]; then
 fi
 
 # Non-root: still create dirs if possible, then exec
-mkdir -p /app/config/yubal /app/config/ytdlp /app/data 2>/dev/null || true
+mkdir -p /app/config/soundify /app/config/ytdlp /app/data 2>/dev/null || true
 exec "$@"

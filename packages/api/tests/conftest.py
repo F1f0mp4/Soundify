@@ -1,4 +1,4 @@
-"""Test fixtures and configuration for yubal-api tests.
+"""Test fixtures and configuration for soundify-api tests.
 
 This module provides shared fixtures organized into:
 - Database fixtures: In-memory SQLite for repository tests
@@ -14,7 +14,7 @@ from zoneinfo import ZoneInfo
 import pytest
 from sqlalchemy.engine import Engine
 from sqlmodel import SQLModel, create_engine
-from yubal_api.db.subscription_repository import SubscriptionRepository
+from soundify_api.db.subscription_repository import SubscriptionRepository
 
 # =============================================================================
 # Database Fixtures
@@ -121,7 +121,7 @@ def id_generator() -> MockIdGenerator:
 @pytest.fixture
 def make_subscription() -> Callable[..., dict]:
     """Factory for creating subscription data dicts."""
-    from yubal_api.db.subscription import SubscriptionType
+    from soundify_api.db.subscription import SubscriptionType
 
     def _make_subscription(
         url: str = "https://music.youtube.com/playlist?list=PLtest",

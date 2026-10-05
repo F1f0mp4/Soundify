@@ -1,7 +1,7 @@
 set dotenv-load
 
 # Project root directory (can be overridden via .env or env var)
-export YUBAL_ROOT := justfile_directory()
+export SOUNDIFY_ROOT := justfile_directory()
 
 export GITHUB_TOKEN := env("GITHUB_TOKEN", `gh auth token 2>/dev/null || true`)
 
@@ -101,7 +101,7 @@ dev:
 [group('dev')]
 [private]
 dev-api:
-    YUBAL_LOG_LEVEL=DEBUG uv run uvicorn yubal_api.api.app:app --reload
+    SOUNDIFY_LOG_LEVEL=DEBUG uv run uvicorn soundify_api.api.app:app --reload
 
 [group('dev')]
 [private]
@@ -124,7 +124,7 @@ prod: build serve
 [group('prod')]
 [private]
 serve:
-    YUBAL_HOST=0.0.0.0 uv run python -m yubal_api
+    SOUNDIFY_HOST=0.0.0.0 uv run python -m soundify_api
 
 # Lint
 [doc("Lint Python + Web")]
@@ -272,8 +272,8 @@ version VERSION:
     set -euo pipefail
 
     # Update Python packages
-    uv version --frozen --package yubal {{ VERSION }}
-    uv version --frozen --package yubal-api {{ VERSION }}
+    uv version --frozen --package soundify {{ VERSION }}
+    uv version --frozen --package soundify-api {{ VERSION }}
     uv version --frozen {{ VERSION }}
 
     # Update web package
@@ -311,9 +311,9 @@ smoke: smoke-py smoke-web
 [group('ci')]
 [private]
 smoke-py:
-    uv build --package yubal
-    uv build --package yubal-api
-    uv run python -c "import yubal_api; print('OK')"
+    uv build --package soundify
+    uv build --package soundify-api
+    uv run python -c "import soundify_api; print('OK')"
 
 [group('ci')]
 [private]
@@ -329,14 +329,14 @@ clean:
 [doc("Build local Docker image")]
 [group('docker')]
 docker-build:
-    docker build -t yubal:local .
+    docker build -t soundify:local .
 
 [doc("Build image, show size, then remove")]
 [group('docker')]
 docker-size:
-    docker build -t yubal:docker-size .
-    @docker images yubal:docker-size --format '{{ "{{" }}.Size{{ "}}" }}'
-    @docker rmi yubal:docker-size
+    docker build -t soundify:docker-size .
+    @docker images soundify:docker-size --format '{{ "{{" }}.Size{{ "}}" }}'
+    @docker rmi soundify:docker-size
 
 [doc("Run docker compose up")]
 [group('docker')]
@@ -355,7 +355,7 @@ dead-code: dead-code-py dead-code-web
 [doc("Detect dead Python code")]
 [group('lint')]
 dead-code-py:
-    uv run --with vulture vulture packages/yubal/src packages/api/src scripts --min-confidence 60
+    uv run --with vulture vulture packages/soundify/src packages/api/src scripts --min-confidence 60
 
 [doc("Detect dead web code")]
 [group('lint')]
@@ -367,46 +367,46 @@ dead-code-web:
 [doc("Generate API documentation")]
 [group('docs')]
 docs:
-    uv run --with pdoc pdoc yubal --output-dir docs/pdoc/yubal --docformat google
+    uv run --with pdoc pdoc soundify --output-dir docs/pdoc/soundify --docformat google
 
 [doc("Serve API documentation locally")]
 [group('docs')]
 docs-serve:
-    uv run --with pdoc pdoc yubal --docformat google
+    uv run --with pdoc pdoc soundify --docformat google
 
-# yubal CLI
+# soundify CLI
 [group('cli')]
 [positional-arguments]
 cli *args:
-    uv run yubal "$@"
+    uv run soundify "$@"
 
 # Database migrations
 [doc("Generate a new migration")]
 [group('db')]
-[working-directory('packages/api/src/yubal_api')]
+[working-directory('packages/api/src/soundify_api')]
 db-generate message:
     uv run alembic revision --autogenerate -m "{{ message }}"
 
 [doc("Run pending migrations")]
 [group('db')]
-[working-directory('packages/api/src/yubal_api')]
+[working-directory('packages/api/src/soundify_api')]
 db-migrate:
     uv run alembic upgrade head
 
 [confirm("Delete database and run all migrations?")]
 [doc("Reset database (delete and recreate)")]
 [group('db')]
-[working-directory('packages/api/src/yubal_api')]
+[working-directory('packages/api/src/soundify_api')]
 db-reset:
-    rm -f "${YUBAL_CONFIG:-config}/yubal/yubal.db"
+    rm -f "${SOUNDIFY_CONFIG:-config}/soundify/soundify.db"
     uv run alembic upgrade head
 
 [confirm("Delete all migrations and regenerate from current schema?")]
 [doc("Consolidate all migrations into a single initial migration")]
 [group('db')]
-[working-directory('packages/api/src/yubal_api')]
+[working-directory('packages/api/src/soundify_api')]
 db-consolidate:
-    rm -f "${YUBAL_CONFIG:-config}/yubal/yubal.db"
+    rm -f "${SOUNDIFY_CONFIG:-config}/soundify/soundify.db"
     rm -f migrations/versions/*.py
     uv run alembic revision --autogenerate -m "Initial schema"
     uv run alembic upgrade head

@@ -1,23 +1,90 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
-/* Brand palette. `accent` is HeroUI's main semantic color (v2 `primary`);
-   `secondary` is a project-owned color, since v3 dropped the token. */
+/* ---------------------------------------------------------------------------
+   Soundify design tokens
+
+   The look is "dark glass over atmosphere": a fixed ambient backdrop, with
+   translucent frosted surfaces floating on top of it. Surfaces are therefore
+   defined with alpha rather than solid hex, so the backdrop shows through and
+   blur has something to work with.
+--------------------------------------------------------------------------- */
+
 @theme {
-  --color-secondary: #5e409d;
+  --color-secondary: #7c68c8;
+  --color-brand: #5ee0cf;
+
+  /* Light, wide type is the signature of this design. */
+  --font-display:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, sans-serif;
 }
 
 :root {
-  --accent: #24837b;
+  /* Deep enough that white text on the primary button clears contrast; the
+     luminous aqua of the dark theme washes out on a pale ground. */
+  --accent: #0a6b61;
   --accent-foreground: #ffffff;
-  --focus: #24837b;
+  --focus: #0a6b61;
+
+  --background: #eef2f7;
+  --foreground: #0d1620;
+  --muted: #55647a;
+  --separator: rgb(13 22 32 / 0.1);
+
+  --surface: rgb(255 255 255 / 0.62);
+  --surface-secondary: rgb(255 255 255 / 0.48);
+  --surface-tertiary: rgb(13 22 32 / 0.05);
+  --surface-border: rgb(13 22 32 / 0.09);
 }
 
 .dark {
-  --accent: #3aa99f;
-  --accent-foreground: #000000;
-  --focus: #3aa99f;
-  --color-secondary: #8b7ec8;
+  --accent: #5ee0cf;
+  --accent-foreground: #04120f;
+  --focus: #5ee0cf;
+  --color-secondary: #9d8fe0;
+
+  --background: #05080f;
+  --foreground: #f2f6fb;
+  --muted: rgb(242 246 251 / 0.55);
+  --separator: rgb(255 255 255 / 0.09);
+
+  --surface: rgb(255 255 255 / 0.06);
+  --surface-secondary: rgb(255 255 255 / 0.045);
+  --surface-tertiary: rgb(255 255 255 / 0.08);
+  --surface-border: rgb(255 255 255 / 0.1);
+}
+
+/* ---------------------------------------------------------------------------
+   Glass surfaces
+--------------------------------------------------------------------------- */
+
+/* The primary floating surface. Saturation is pushed slightly so colour from
+   the backdrop bleeds through the blur instead of turning flat grey. */
+@utility glass {
+  background-color: var(--surface);
+  border: 1px solid var(--surface-border);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+}
+
+/* A quieter surface for rows nested inside a glass panel, which would
+   otherwise stack two blurs and turn milky. */
+@utility glass-subtle {
+  background-color: var(--surface-secondary);
+  border: 1px solid var(--surface-border);
+}
+
+/* Hairline separator that reads on both themes. */
+@utility hairline {
+  border-color: var(--separator);
+}
+
+/* Wide-tracked micro labels used under metrics and as section headings. */
+@utility eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 /* Icon-only row actions (job cards, subscription rows): no background at rest
@@ -28,7 +95,10 @@
   --button-bg-pressed: transparent;
 }
 
-/* Animated gradient text */
+/* ---------------------------------------------------------------------------
+   Motion
+--------------------------------------------------------------------------- */
+
 @keyframes gradient {
   0% {
     background-position: 0% 50%;
@@ -45,24 +115,56 @@
   animation: gradient 3s linear infinite;
 }
 
+/* The ambient backdrop drifts almost imperceptibly, so a static page still
+   feels alive without pulling attention from the content. */
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -2%, 0) scale(1.06);
+  }
+}
+
+.animate-drift {
+  animation: drift 34s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-drift,
+  .animate-gradient {
+    animation: none;
+  }
+}
+
 /* Configure dark mode to use dark class */
 @variant dark (&:where(.dark, .dark *));
 
 html {
   scrollbar-gutter: stable;
-}
-
-/* Background */
-html {
-  background-color: #fff;
+  background-color: var(--background);
+  color-scheme: light;
 }
 
 html.dark {
-  background-color: #000;
+  color-scheme: dark;
 }
 
-/* Logs panel ANSI styling using HeroUI semantic colors */
-/* ansi_up outputs class names like ansi-red-fg, ansi-bright-green-fg, etc. */
+body {
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numerals keep metric rings from jittering as values tick up. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   Logs panel ANSI styling using semantic colors
+   ansi_up outputs class names like ansi-red-fg, ansi-bright-green-fg, etc.
+--------------------------------------------------------------------------- */
 .logs-container {
   color: var(--foreground);
 

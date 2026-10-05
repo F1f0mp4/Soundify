@@ -26,3 +26,6 @@ __pycache__/
 /.codegraph/
 # heroui-agents-md
 .heroui-docs/
+
+# npm artifact; this project uses bun
+/web/package-lock.json

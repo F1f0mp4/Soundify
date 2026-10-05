@@ -1,6 +1,6 @@
 import { GITHUB_ICON } from "@/lib/icons";
 import { rawHtml } from "@/lib/raw-html";
-import { yubalUrl } from "@/lib/storage";
+import { soundifyUrl } from "@/lib/storage";
 import van, { type State } from "vanjs-core";
 
 const { a, footer, div, span } = van.tags;
@@ -12,7 +12,7 @@ interface FooterProps {
 export function Footer({ connected }: FooterProps) {
   const version = `v${browser.runtime.getManifest().version}`;
   const instanceUrl = van.state("");
-  yubalUrl.getValue().then((url) => {
+  soundifyUrl.getValue().then((url) => {
     if (url) instanceUrl.val = url;
   });
 
@@ -50,7 +50,7 @@ export function Footer({ connected }: FooterProps) {
     },
     a(
       {
-        href: "https://yubal.guillevc.dev",
+        href: "https://soundify.guillevc.dev",
         target: "_blank",
         class:
           "flex items-center gap-1.5 font-semibold text-xs text-mist-500 hover:text-mist-300 transition-colors [&>svg]:size-3.5",

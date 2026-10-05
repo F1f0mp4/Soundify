@@ -1,5 +1,5 @@
 [project]
-name = "yubal-workspace"
+name = "soundify-workspace"
 version = "0.10.0"
 requires-python = ">=3.12"
 
@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 members = ["packages/*"]
 
 [tool.uv.sources]
-yubal = { workspace = true }
+soundify = { workspace = true }
 
 [dependency-groups]
 dev = [

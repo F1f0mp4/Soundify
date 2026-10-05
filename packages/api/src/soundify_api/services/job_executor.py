@@ -1,0 +1,345 @@
+"""Job execution orchestration service."""
+
+import asyncio
+import logging
+from datetime import UTC, datetime
+from functools import partial
+from pathlib import Path
+from typing import Any
+from uuid import UUID
+
+from soundify import AudioCodec, CancelToken, cleanup_part_files
+
+from soundify_api.domain.enums import JobSource, JobStatus, ProgressStep
+from soundify_api.domain.job import ContentInfo, Job
+from soundify_api.services.protocols import JobExecutionStore
+from soundify_api.services.subscription_service import SubscriptionService
+from soundify_api.services.sync_service import SyncService
+
+logger = logging.getLogger(__name__)
+
+PROGRESS_COMPLETE = 100.0
+
+
+class JobExecutor:
+    """Orchestrates job execution lifecycle.
+
+    This executor manages background job execution with proper cleanup and
+    cancellation support. Jobs run in a thread pool to avoid blocking the
+    async event loop during I/O-heavy operations (yt-dlp downloads).
+
+    Key Responsibilities:
+        - Background task lifecycle (creation, tracking, cleanup)
+        - Cancellation via CancelToken registry
+        - Timeout enforcement via asyncio.timeout
+        - Job queue continuation (starts next pending job when one completes)
+        - Progress callback wiring to update job store
+
+    Architecture Notes:
+        - Uses JobExecutionStore protocol for persistence (ISP compliance)
+        - CancelToken is the single source of truth for cancellation
+        - Tasks are tracked in a set to prevent garbage collection
+    """
+
+    def __init__(
+        self,
+        job_store: JobExecutionStore,
+        base_path: Path,
+        audio_format: AudioCodec = AudioCodec.OPUS,
+        audio_quality: int = 0,
+        cookies_path: Path | None = None,
+        fetch_lyrics: bool = True,
+        ytmusic_lyrics_fallback: bool = True,
+        apply_replaygain: bool = False,
+        ascii_filenames: bool = False,
+        download_ugc: bool = False,
+        player_clients: tuple[str, ...] | None = None,
+        pot_provider_url: str | None = None,
+        download_sleep_interval: float = 0.0,
+        subscription_service: SubscriptionService | None = None,
+        cache_path: Path | None = None,
+        job_timeout: float = 1800,
+    ) -> None:
+        """Initialize the job executor.
+
+        Args:
+            job_store: Store for job persistence (protocol-based for testability).
+            base_path: Base directory for downloaded files.
+            audio_format: Target audio format (opus, mp3, m4a).
+            audio_quality: Audio quality (0 = best, 10 = worst).
+            cookies_path: Optional path to cookies.txt for authenticated requests.
+            fetch_lyrics: Whether to fetch lyrics from lrclib.net.
+            ytmusic_lyrics_fallback: Whether to fall back to YouTube Music lyrics
+                when lrclib.net has no match.
+            apply_replaygain: Whether to apply ReplayGain tags using rsgain.
+            ascii_filenames: Whether to transliterate unicode to ASCII in filenames.
+            download_ugc: Whether to download UGC tracks to _Unofficial folder.
+            player_clients: yt-dlp YouTube clients to extract from, in order.
+            pot_provider_url: Base URL of a PO token provider, if one is running.
+            download_sleep_interval: Seconds to sleep between downloads.
+            subscription_service: Optional service to update subscription metadata.
+            cache_path: Optional directory for extraction cache.
+            job_timeout: Maximum execution time per job in seconds.
+        """
+        self._job_store = job_store
+        self._base_path = base_path
+        self._audio_format = audio_format
+        self._audio_quality = audio_quality
+        self._cookies_path = cookies_path
+        self._fetch_lyrics = fetch_lyrics
+        self._ytmusic_lyrics_fallback = ytmusic_lyrics_fallback
+        self._apply_replaygain = apply_replaygain
+        self._ascii_filenames = ascii_filenames
+        self._download_ugc = download_ugc
+        self._player_clients = player_clients
+        self._pot_provider_url = pot_provider_url
+        self._download_sleep_interval = download_sleep_interval
+        self._subscription_service = subscription_service
+        self._cache_path = cache_path
+        self._job_timeout = job_timeout
+
+        # Track background tasks to prevent GC during execution
+        self._background_tasks: set[asyncio.Task[Any]] = set()
+        # Map job_id -> CancelToken for cancellation support
+        self._cancel_tokens: dict[str, CancelToken] = {}
+
+    def create_and_start_job(
+        self,
+        url: str,
+        max_items: int | None = None,
+        source: JobSource = JobSource.MANUAL,
+        subscription_id: UUID | None = None,
+    ) -> Job | None:
+        """Create a new job and start it if ready.
+
+        This is the primary entry point for job creation. It handles:
+        - Creating the job with proper audio format from settings
+        - Starting the job if a slot is available
+
+        Args:
+            url: The URL to download content from.
+            max_items: Maximum number of items to download (None for all).
+            source: Source of the job (manual API call or scheduler).
+            subscription_id: Optional subscription that triggered this job.
+
+        Returns:
+            The created Job, or None if queue is full.
+        """
+        result = self._job_store.create(
+            url, self._audio_format, max_items, source, subscription_id
+        )
+        if result is None:
+            return None
+
+        job, should_start = result
+        if should_start:
+            self.start_job(job)
+
+        return job
+
+    def start_job(self, job: Job) -> None:
+        """Start a job as a background task.
+
+        The task is tracked to prevent garbage collection and will
+        automatically trigger the next pending job when complete.
+
+        Args:
+            job: The job to start executing.
+        """
+        task = asyncio.create_task(
+            self._run_job(job.id, job.url, job.max_items, job.subscription_id),
+            name=f"job-{job.id[:8]}",  # Helpful for debugging
+        )
+        self._background_tasks.add(task)
+        task.add_done_callback(self._background_tasks.discard)
+
+    def cancel_job(self, job_id: str) -> bool:
+        """Signal cancellation for a running job.
+
+        This sets the cancel token which will be checked during download.
+        The actual job status update happens in _run_job when it detects
+        the cancellation.
+
+        Args:
+            job_id: ID of the job to cancel.
+
+        Returns:
+            True if a cancel token existed (job was running), False otherwise.
+        """
+        token = self._cancel_tokens.get(job_id)
+        if token is None:
+            return False
+
+        token.cancel()
+        logger.info("Job cancellation requested: %s", job_id[:8])
+        return True
+
+    def cancel_all_jobs(self) -> int:
+        """Cancel all running jobs. Used during shutdown.
+
+        Returns:
+            Number of jobs that were signalled for cancellation.
+        """
+        tokens = list(self._cancel_tokens.values())
+        for token in tokens:
+            token.cancel()
+        return len(tokens)
+
+    async def _run_job(
+        self,
+        job_id: str,
+        url: str,
+        max_items: int | None = None,
+        subscription_id: UUID | None = None,
+    ) -> None:
+        """Background task that runs the sync operation."""
+        cancel_token = CancelToken()
+        self._cancel_tokens[job_id] = cancel_token
+
+        try:
+            # Check cancellation before starting (CancelToken is single source of truth)
+            if cancel_token.is_cancelled:
+                return
+
+            async with asyncio.timeout(self._job_timeout):
+                self._job_store.transition(
+                    job_id,
+                    JobStatus.FETCHING_INFO,
+                    started_at=datetime.now(UTC),
+                )
+
+                # Create progress callback that updates job store
+                loop = asyncio.get_running_loop()
+
+                def on_progress(
+                    step: ProgressStep,
+                    _message: str,
+                    progress: float | None,
+                    details: dict[str, Any] | None,
+                ) -> None:
+                    if cancel_token.is_cancelled:
+                        return
+
+                    status = self._step_to_status(step)
+                    content_info = (
+                        self._parse_content_info(details) if details else None
+                    )
+
+                    # Skip terminal states - handled by result
+                    if status in (JobStatus.COMPLETED, JobStatus.FAILED):
+                        return
+
+                    loop.call_soon_threadsafe(
+                        partial(
+                            self._job_store.transition,
+                            job_id,
+                            status,
+                            progress=progress,
+                            content_info=content_info,
+                        )
+                    )
+
+                # Run sync in thread pool
+                sync_service = SyncService(
+                    self._base_path,
+                    self._audio_format,
+                    self._cookies_path,
+                    self._fetch_lyrics,
+                    self._ytmusic_lyrics_fallback,
+                    self._apply_replaygain,
+                    self._ascii_filenames,
+                    self._download_ugc,
+                    self._cache_path,
+                    self._audio_quality,
+                    player_clients=self._player_clients,
+                    pot_provider_url=self._pot_provider_url,
+                    download_sleep_interval=self._download_sleep_interval,
+                )
+                result = await asyncio.to_thread(
+                    sync_service.run,
+                    url,
+                    on_progress,
+                    cancel_token,
+                    max_items,
+                )
+
+                # Handle result (cancelled status already set by cancel_job API)
+                if cancel_token.is_cancelled:
+                    pass  # Status already set, cleanup happens in finally block
+                elif result.success:
+                    self._job_store.transition(
+                        job_id,
+                        JobStatus.COMPLETED,
+                        progress=PROGRESS_COMPLETE,
+                        content_info=result.content_info,
+                        download_stats=result.download_stats,
+                    )
+                    # Update subscription metadata with latest info from YouTube Music
+                    if (
+                        self._subscription_service
+                        and subscription_id
+                        and result.content_info
+                        and result.content_info.title
+                    ):
+                        self._subscription_service.update(
+                            subscription_id,
+                            {
+                                "name": result.content_info.title,
+                                "thumbnail_url": result.content_info.thumbnail_url,
+                            },
+                        )
+                else:
+                    error_msg = result.error or "Unknown error"
+                    logger.error("Job %s failed: %s", job_id[:8], error_msg)
+                    self._job_store.transition(job_id, JobStatus.FAILED)
+
+        except TimeoutError:
+            logger.warning(
+                "Job %s timed out after %d seconds", job_id[:8], self._job_timeout
+            )
+            cancel_token.cancel()
+            self._job_store.transition(job_id, JobStatus.FAILED)
+
+        except Exception as e:
+            logger.exception("Job %s failed with error: %s", job_id[:8], e)
+            self._job_store.transition(job_id, JobStatus.FAILED)
+
+        finally:
+            # Clean up .part files if job was cancelled
+            if cancel_token.is_cancelled:
+                cleaned = cleanup_part_files(self._base_path)
+                if cleaned:
+                    logger.info("Cleaned up %d partial download(s)", cleaned)
+
+            self._cancel_tokens.pop(job_id, None)
+
+            # Release active job slot AFTER cleanup, then start next
+            # This ensures no concurrent downloads
+            self._job_store.release_active(job_id)
+            self._start_next_pending()
+
+    @staticmethod
+    def _step_to_status(step: ProgressStep) -> JobStatus:
+        """Map progress step to job status."""
+        return {
+            ProgressStep.FETCHING_INFO: JobStatus.FETCHING_INFO,
+            ProgressStep.DOWNLOADING: JobStatus.DOWNLOADING,
+            ProgressStep.IMPORTING: JobStatus.IMPORTING,
+            ProgressStep.COMPLETED: JobStatus.COMPLETED,
+            ProgressStep.FAILED: JobStatus.FAILED,
+        }.get(step, JobStatus.DOWNLOADING)
+
+    @staticmethod
+    def _parse_content_info(details: dict[str, Any]) -> ContentInfo | None:
+        """Extract content info from details dict."""
+        if data := details.get("content_info"):
+            try:
+                return ContentInfo(**data)
+            except (TypeError, ValueError) as e:
+                logger.warning("Failed to parse content info: %s", e)
+        return None
+
+    def _start_next_pending(self) -> None:
+        """Start the next pending job if any."""
+        if next_job := self._job_store.pop_next_pending():
+            self.start_job(next_job)

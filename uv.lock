@@ -4,9 +4,9 @@ requires-python = ">=3.12"
 
 [manifest]
 members = [
-    "yubal",
-    "yubal-api",
-    "yubal-workspace",
+    "soundify",
+    "soundify-api",
+    "soundify-workspace",
 ]
 
 [[package]]
@@ -1442,9 +1442,9 @@ wheels = [
 ]
 
 [[package]]
-name = "yubal"
+name = "soundify"
 version = "0.10.0"
-source = { editable = "packages/yubal" }
+source = { editable = "packages/soundify" }
 dependencies = [
     { name = "deno" },
     { name = "httpx" },
@@ -1482,7 +1482,7 @@ requires-dist = [
 provides-extras = ["cli"]
 
 [[package]]
-name = "yubal-api"
+name = "soundify-api"
 version = "0.10.0"
 source = { editable = "packages/api" }
 dependencies = [
@@ -1494,7 +1494,7 @@ dependencies = [
     { name = "sqlmodel" },
     { name = "tzdata" },
     { name = "uvicorn", extra = ["standard"] },
-    { name = "yubal" },
+    { name = "soundify" },
 ]
 
 [package.metadata]
@@ -1507,11 +1507,11 @@ requires-dist = [
     { name = "sqlmodel", specifier = ">=0.0.24" },
     { name = "tzdata", specifier = ">=2025.1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.40.0" },
-    { name = "yubal", editable = "packages/yubal" },
+    { name = "soundify", editable = "packages/soundify" },
 ]
 
 [[package]]
-name = "yubal-workspace"
+name = "soundify-workspace"
 version = "0.10.0"
 source = { virtual = "." }
 

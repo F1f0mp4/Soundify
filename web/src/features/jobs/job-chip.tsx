@@ -1,17 +1,17 @@
 import { Chip, tv, type VariantProps } from "@heroui/react";
 import { ReactNode } from "react";
 
+// Hairline outline rather than a filled pill: several chips sit together on a
+// translucent row, and filled backgrounds stack into visual noise against the
+// frosted surface behind them.
 const jobChip = tv({
-  base: "font-mono",
+  base: "border bg-transparent text-[0.625rem] tracking-[0.1em] uppercase",
   variants: {
     variant: {
-      // `--default-soft` sits within ~1% lightness of the row's surface, so the
-      // neutral chips need their own contrast against the card background.
-      flat: "bg-foreground/10 text-muted",
-      album: "bg-accent/15 text-accent",
-      playlist: "bg-secondary/15 text-secondary",
-      track:
-        "bg-amber-500/15 text-amber-600 dark:bg-amber-500/20 dark:text-amber-300",
+      flat: "text-muted border-[var(--surface-border)]",
+      album: "text-accent border-accent/35",
+      playlist: "text-secondary border-secondary/35",
+      track: "border-amber-500/35 text-amber-600 dark:text-amber-300",
     },
   },
   defaultVariants: {
@@ -26,7 +26,6 @@ type Props = {
 
 export function JobChip({ children, variant, className }: Props) {
   return (
-    // `md` keeps the base chip padding (px-2 py-0.5); `sm` squashes it to px-1 py-0.
     <Chip size="md" variant="soft" className={jobChip({ variant, className })}>
       {children}
     </Chip>

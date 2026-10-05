@@ -1,7 +1,7 @@
 """Tests for API schemas."""
 
 import pytest
-from yubal_api.schemas.jobs import validate_youtube_music_url
+from soundify_api.schemas.jobs import validate_youtube_music_url
 
 
 class TestValidateYouTubeMusicUrl:

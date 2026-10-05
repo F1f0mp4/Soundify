@@ -1,6 +1,6 @@
 import "@/assets/index.css";
 import van from "vanjs-core";
-import { yubalUrl, yubalUrlDraft } from "@/lib/storage";
+import { soundifyUrl, soundifyUrlDraft } from "@/lib/storage";
 import { isYouTubeUrl } from "@/lib/youtube";
 import { SetupPage } from "@/components/setup-page";
 import { ConnectionErrorPage } from "@/components/connection-error-page";
@@ -23,7 +23,7 @@ function goToSetup(showBack: boolean) {
   view.val = SetupPage({
     showBack,
     onBack: () => {
-      yubalUrlDraft.removeValue();
+      soundifyUrlDraft.removeValue();
       refresh();
     },
   });
@@ -32,7 +32,7 @@ function goToSetup(showBack: boolean) {
 async function refresh() {
   const id = ++navId;
 
-  const baseUrl = await yubalUrl.getValue();
+  const baseUrl = await soundifyUrl.getValue();
   if (id !== navId) return;
 
   if (!baseUrl) {
@@ -84,13 +84,13 @@ async function refresh() {
 }
 
 async function init() {
-  const baseUrl = await yubalUrl.getValue();
+  const baseUrl = await soundifyUrl.getValue();
   if (!baseUrl) {
     goToSetup(false);
     return;
   }
 
-  const draft = await yubalUrlDraft.getValue();
+  const draft = await soundifyUrlDraft.getValue();
   if (draft) {
     goToSetup(true);
     return;

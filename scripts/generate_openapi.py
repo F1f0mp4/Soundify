@@ -40,15 +40,15 @@ def main() -> int:
     """Generate OpenAPI schema."""
     print("Starting temporary API server...")
 
-    # Start server with temporary YUBAL_ROOT
+    # Start server with temporary SOUNDIFY_ROOT
     server_process = subprocess.Popen(
         [
             "uv",
             "run",
             "--package",
-            "yubal-api",
+            "soundify-api",
             "uvicorn",
-            "yubal_api.api.app:app",
+            "soundify_api.api.app:app",
             "--host",
             API_HOST,
             "--port",
@@ -56,7 +56,7 @@ def main() -> int:
             "--log-level",
             "error",
         ],
-        env=os.environ | {"YUBAL_ROOT": tempfile.gettempdir()},
+        env=os.environ | {"SOUNDIFY_ROOT": tempfile.gettempdir()},
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )

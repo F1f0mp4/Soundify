@@ -11,7 +11,7 @@ export { default as PLAY_ICON } from "lucide-static/icons/play.svg?raw";
 export { default as SETTINGS_ICON } from "lucide-static/icons/settings.svg?raw";
 export { default as WIFI_ICON } from "lucide-static/icons/wifi.svg?raw";
 
-export const YUBAL_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+export const SOUNDIFY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <g transform="scale(4.167)" stroke="#3AA99F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="10" fill="#100F0F"/>
     <path d="M6 12c0-1.7.7-3.2 1.8-4.2" fill="none"/>

@@ -2,7 +2,7 @@ import {
   ARROW_LEFT_ICON,
   EXTERNAL_LINK_ICON,
   SETTINGS_ICON,
-  YUBAL_ICON,
+  SOUNDIFY_ICON,
 } from "@/lib/icons";
 import { rawHtml } from "@/lib/raw-html";
 import van from "vanjs-core";
@@ -21,9 +21,9 @@ export function Header({ instanceUrl, onBack, onSettings }: HeaderProps = {}) {
       class:
         "flex items-center justify-center size-7 rounded-lg bg-primary-600/20 [&>svg]:size-5",
     },
-    rawHtml(YUBAL_ICON),
+    rawHtml(SOUNDIFY_ICON),
   );
-  const title = span({ class: "text-base font-bold text-mist-100" }, "yubal");
+  const title = span({ class: "text-base font-bold text-mist-100" }, "soundify");
 
   const brand = instanceUrl
     ? a(

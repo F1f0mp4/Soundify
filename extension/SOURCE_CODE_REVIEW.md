@@ -1,13 +1,13 @@
 # Source Code Review Instructions
 
-This document explains how to build the yubal browser extension from source
+This document explains how to build the soundify browser extension from source
 for add-on review purposes.
 
 ## Overview
 
-yubal is a companion browser extension for [yubal](https://github.com/guillevc/yubal),
+soundify is a companion browser extension for [soundify](https://github.com/guillevc/yubal),
 a self-hosted YouTube Music library manager. The extension sends YouTube URLs
-from the browser to a user-configured yubal server instance.
+from the browser to a user-configured soundify server instance.
 
 - **Framework**: [WXT](https://wxt.dev/) (Web Extension Tools)
 - **Language**: TypeScript

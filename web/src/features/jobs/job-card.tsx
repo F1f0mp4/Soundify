@@ -4,7 +4,6 @@ import { isActive, isFinished, isRunning } from "@/lib/job-status";
 import {
   Button,
   buttonVariants,
-  Card,
   Chip,
   cn,
   ProgressBar,
@@ -111,10 +110,10 @@ function Thumbnail({
         <img
           src={url}
           alt=""
-          className="h-full w-full rounded-sm object-cover"
+          className="h-full w-full rounded-xl object-cover"
         />
       ) : (
-        <div className="bg-surface-tertiary flex h-full w-full shrink-0 items-center justify-center rounded-sm"></div>
+        <div className="bg-surface-tertiary flex h-full w-full shrink-0 items-center justify-center rounded-xl"></div>
       )}
       <div className="bg-surface-secondary/80 absolute right-0.5 bottom-0.5 z-10 grid h-6 w-6 place-items-center rounded-full">
         {statusIcon}
@@ -149,11 +148,13 @@ function ContentInfo({
   return (
     <div className="min-w-0">
       <div className="flex flex-col gap-1">
-        <div className="flex min-w-0 items-baseline gap-2 font-mono text-sm">
+        <div className="flex min-w-0 items-baseline gap-2 text-[0.9375rem] font-light">
           <span className="text-foreground truncate">{title}</span>
-          {year && <span className="text-muted shrink-0">({year})</span>}
+          {year && (
+            <span className="text-muted tnum shrink-0 text-xs">{year}</span>
+          )}
         </div>
-        <p className="text-muted mb-1 min-w-0 truncate text-sm">{artist}</p>
+        <p className="text-muted mb-1.5 min-w-0 truncate text-xs">{artist}</p>
       </div>
       <div className="flex items-center gap-2">
         {source === "scheduler" && (
@@ -205,8 +206,8 @@ export function JobCard({ job, onCancel, onDelete }: Props) {
   const opacity = job.status === "cancelled" ? "opacity-50" : "";
 
   return (
-    <Card variant="secondary" className={`group ${opacity}`}>
-      <Card.Content className="flex-row items-center gap-3">
+    <div className={cn("glass-subtle group rounded-2xl", opacity)}>
+      <div className="flex flex-row items-center gap-3.5 p-3.5">
         <Thumbnail
           url={content_info?.thumbnail_url ?? null}
           status={job.status}
@@ -274,10 +275,10 @@ export function JobCard({ job, onCancel, onDelete }: Props) {
             <Trash2Icon className="h-4 w-4" />
           </Button>
         )}
-      </Card.Content>
+      </div>
 
       {isJobRunning && (
-        <Card.Footer className="gap-2">
+        <div className="flex items-center gap-3 px-3.5 pb-3.5">
           <ProgressBar
             value={job.progress}
             size="md"
@@ -289,11 +290,11 @@ export function JobCard({ job, onCancel, onDelete }: Props) {
               <ProgressBar.Fill className="transition-all duration-500 ease-out" />
             </ProgressBar.Track>
           </ProgressBar>
-          <span className="text-muted w-8 text-right font-mono text-sm">
+          <span className="text-muted tnum w-9 text-right text-xs">
             {Math.round(job.progress)}%
           </span>
-        </Card.Footer>
+        </div>
       )}
-    </Card>
+    </div>
   );
 }

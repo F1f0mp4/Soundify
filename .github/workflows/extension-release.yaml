@@ -64,8 +64,8 @@ jobs:
       - name: Append attestation links to changelog
         run: |
           version="${GITHUB_REF_NAME#ext-}"
-          chrome="yubal-extension-${version}-chrome.zip"
-          firefox="yubal-extension-${version}-firefox.zip"
+          chrome="soundify-extension-${version}-chrome.zip"
+          firefox="soundify-extension-${version}-firefox.zip"
           owner="${{ github.repository_owner }}"
           {
             echo ""

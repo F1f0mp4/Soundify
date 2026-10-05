@@ -2,8 +2,8 @@
 
 from uuid import uuid4
 
-from yubal_api.db.subscription import Subscription, SubscriptionType
-from yubal_api.db.subscription_repository import SubscriptionRepository
+from soundify_api.db.subscription import Subscription, SubscriptionType
+from soundify_api.db.subscription_repository import SubscriptionRepository
 
 
 class TestSubscriptionRepository:

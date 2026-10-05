@@ -1,6 +1,6 @@
 {
-  "name": "yubal",
-  "description": "Queue YouTube content to your yubal instance",
+  "name": "soundify",
+  "description": "Queue YouTube content to your soundify instance",
   "private": true,
   "version": "0.1.0",
   "type": "module",

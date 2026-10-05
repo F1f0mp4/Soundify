@@ -1,7 +1,7 @@
 import { healthCheck } from "@/lib/api";
 import { CIRCLE_CHECK_ICON, INFO_ICON, WIFI_ICON } from "@/lib/icons";
 import { rawHtml } from "@/lib/raw-html";
-import { yubalUrl, yubalUrlDraft } from "@/lib/storage";
+import { soundifyUrl, soundifyUrlDraft } from "@/lib/storage";
 import van from "vanjs-core";
 import { Header } from "./header";
 
@@ -45,16 +45,16 @@ export function SetupPage({ showBack, onBack }: SetupPageProps) {
       "w-full rounded-lg border border-mist-700 bg-mist-900 px-3 py-2 font-mono text-sm text-mist-200 outline-none focus:border-primary-600",
     placeholder: "http://localhost:8000",
     oninput: () => {
-      yubalUrlDraft.setValue((urlInput as HTMLInputElement).value);
+      soundifyUrlDraft.setValue((urlInput as HTMLInputElement).value);
     },
   });
 
   // Restore draft, then fall back to saved value
-  yubalUrlDraft.getValue().then((draft) => {
+  soundifyUrlDraft.getValue().then((draft) => {
     if (draft) {
       (urlInput as HTMLInputElement).value = draft;
     } else {
-      yubalUrl.getValue().then((v: string | null) => {
+      soundifyUrl.getValue().then((v: string | null) => {
         if (v) (urlInput as HTMLInputElement).value = v;
       });
     }
@@ -86,8 +86,8 @@ export function SetupPage({ showBack, onBack }: SetupPageProps) {
         }
         const ok = await testConnection(value);
         if (!ok) return;
-        await yubalUrl.setValue(value);
-        await yubalUrlDraft.removeValue();
+        await soundifyUrl.setValue(value);
+        await soundifyUrlDraft.removeValue();
         onBack();
       },
     },
@@ -171,7 +171,7 @@ export function SetupPage({ showBack, onBack }: SetupPageProps) {
         h1({ class: "text-base font-semibold" }, "Server Setup"),
         p(
           { class: "text-sm text-mist-400" },
-          "Connect to your yubal server to start downloading tracks.",
+          "Connect to your soundify server to start downloading tracks.",
         ),
       ),
       div(
@@ -184,7 +184,7 @@ export function SetupPage({ showBack, onBack }: SetupPageProps) {
               "inline-flex items-center gap-1 text-xs text-mist-500 [&>svg]:size-3 [&>svg]:shrink-0",
           },
           rawHtml(INFO_ICON),
-          "yubal runs on 8000 by default",
+          "soundify runs on 8000 by default",
         ),
       ),
       () => p({ class: statusClass.val }, statusText.val),

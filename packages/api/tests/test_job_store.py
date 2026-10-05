@@ -4,11 +4,11 @@ import threading
 from typing import Any
 
 import pytest
-from yubal import AudioCodec, PhaseStats
-from yubal_api.domain.enums import JobSource, JobStatus
-from yubal_api.domain.job import ContentInfo
-from yubal_api.services.job_event_bus import JobEventBus
-from yubal_api.services.job_store import JobStore
+from soundify import AudioCodec, PhaseStats
+from soundify_api.domain.enums import JobSource, JobStatus
+from soundify_api.domain.job import ContentInfo
+from soundify_api.services.job_event_bus import JobEventBus
+from soundify_api.services.job_store import JobStore
 
 # =============================================================================
 # Fixtures

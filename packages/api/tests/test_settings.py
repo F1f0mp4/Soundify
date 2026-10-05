@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 from pydantic import ValidationError
-from yubal_api.settings import Settings
+from soundify_api.settings import Settings
 
 # Common test paths
 TEST_ROOT = Path("/tmp/test")
@@ -17,9 +17,9 @@ TEST_CONFIG = Path("/tmp/test/config")
 @pytest.fixture(autouse=True)
 def _isolate_settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """Isolate tests from .env file and shell environment."""
-    # Clear all YUBAL_* env vars
+    # Clear all SOUNDIFY_* env vars
     for key in list(os.environ.keys()):
-        if key.startswith("YUBAL_"):
+        if key.startswith("SOUNDIFY_"):
             monkeypatch.delenv(key, raising=False)
     # Change to temp dir so Settings won't find .env file
     monkeypatch.chdir(tmp_path)
@@ -109,7 +109,7 @@ class TestRootRequired:
     def test_raises_when_root_missing(self) -> None:
         """Should raise error when root is not provided."""
         with pytest.raises(
-            ValidationError, match="YUBAL_ROOT environment variable is required"
+            ValidationError, match="SOUNDIFY_ROOT environment variable is required"
         ):
             Settings(data=TEST_DATA, config=TEST_CONFIG)  # type: ignore[call-arg]
 
@@ -213,13 +213,13 @@ class TestBasePath:
     @pytest.mark.parametrize(
         ("input_val", "expected"),
         [
-            ("/yubal", "/yubal"),
-            ("yubal", "/yubal"),
-            ("/yubal/", "/yubal"),
-            ("yubal/", "/yubal"),
+            ("/soundify", "/soundify"),
+            ("soundify", "/soundify"),
+            ("/soundify/", "/soundify"),
+            ("soundify/", "/soundify"),
             ("/", ""),
             ("", ""),
-            ("  /yubal  ", "/yubal"),
+            ("  /soundify  ", "/soundify"),
             ("/a/b/c", "/a/b/c"),
             ("/a/b/c/", "/a/b/c"),
         ],
@@ -255,7 +255,7 @@ class TestLyricsSettings:
     def test_ytmusic_lyrics_fallback_env_override(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        monkeypatch.setenv("YUBAL_ROOT", str(TEST_ROOT))
-        monkeypatch.setenv("YUBAL_YTMUSIC_LYRICS_FALLBACK", "false")
+        monkeypatch.setenv("SOUNDIFY_ROOT", str(TEST_ROOT))
+        monkeypatch.setenv("SOUNDIFY_YTMUSIC_LYRICS_FALLBACK", "false")
         settings = Settings()
         assert settings.ytmusic_lyrics_fallback is False

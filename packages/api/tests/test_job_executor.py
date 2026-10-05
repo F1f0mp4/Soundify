@@ -5,11 +5,11 @@ from typing import Any
 from uuid import UUID
 
 import pytest
-from yubal import AudioCodec
-from yubal_api.domain.enums import JobSource, JobStatus
-from yubal_api.domain.job import Job
-from yubal_api.services.job_executor import JobExecutor
-from yubal_api.services.sync_service import SyncResult, SyncService
+from soundify import AudioCodec
+from soundify_api.domain.enums import JobSource, JobStatus
+from soundify_api.domain.job import Job
+from soundify_api.services.job_executor import JobExecutor
+from soundify_api.services.sync_service import SyncResult, SyncService
 
 
 class FakeJobStore:
@@ -69,7 +69,7 @@ class TestExecutorTimeout:
             return SyncResult(success=True)
 
         monkeypatch.setattr(
-            "yubal_api.services.job_executor.SyncService.run",
+            "soundify_api.services.job_executor.SyncService.run",
             blocking_run,
         )
 
@@ -99,7 +99,7 @@ class TestExecutorTimeout:
             return SyncResult(success=True)
 
         monkeypatch.setattr(
-            "yubal_api.services.job_executor.SyncService.run",
+            "soundify_api.services.job_executor.SyncService.run",
             fast_run,
         )
 
@@ -138,11 +138,11 @@ class TestExecutorAudioQuality:
             captured_quality.append(self.audio_quality)
 
         monkeypatch.setattr(
-            "yubal_api.services.job_executor.SyncService.__init__",
+            "soundify_api.services.job_executor.SyncService.__init__",
             spy_init,
         )
         monkeypatch.setattr(
-            "yubal_api.services.job_executor.SyncService.run",
+            "soundify_api.services.job_executor.SyncService.run",
             lambda *a, **kw: SyncResult(success=True),
         )
 
@@ -169,11 +169,11 @@ class TestExecutorAudioQuality:
             captured_quality.append(self.audio_quality)
 
         monkeypatch.setattr(
-            "yubal_api.services.job_executor.SyncService.__init__",
+            "soundify_api.services.job_executor.SyncService.__init__",
             spy_init,
         )
         monkeypatch.setattr(
-            "yubal_api.services.job_executor.SyncService.run",
+            "soundify_api.services.job_executor.SyncService.run",
             lambda *a, **kw: SyncResult(success=True),
         )
 

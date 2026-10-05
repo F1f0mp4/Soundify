@@ -1,17 +1,34 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
 ---
 services:
-  yubal:
+  soundify:
     build: .
-    image: yubal:local
-    container_name: yubal
+    image: soundify:local
+    container_name: soundify
     user: 1000:1000
     environment:
-      YUBAL_PORT: 8000
-      YUBAL_TZ: Europe/Madrid
+      SOUNDIFY_PORT: 8000
+      SOUNDIFY_TZ: Europe/Madrid
+      # PO tokens do NOT bypass YouTube's age gate - measured 2026-09-12, the
+      # mweb client returns the same "Sign in to confirm your age" with and
+      # without one. The pinned clients need no token today, so this stays off.
+      # Enable it only if those clients start demanding tokens.
+      # SOUNDIFY_POT_PROVIDER_URL: http://bgutil:4416
     ports:
       - 8000:8000
     volumes:
       - ./data:/app/data
       - ./config:/app/config
+    restart: unless-stopped
+
+  # Optional PO token provider, off by default.
+  # Start with: docker compose --profile potoken up -d
+  # No ports are published: only the Soundify container reaches it over the compose
+  # network. Pin 2.0.0 or newer - earlier versions bind 0.0.0.0 and carry an RCE
+  # (GHSA-qpv9-8xfj-xx9m).
+  bgutil:
+    image: brainicism/bgutil-ytdlp-pot-provider:2.0.0
+    container_name: soundify-bgutil
+    init: true
+    profiles: ["potoken"]
     restart: unless-stopped

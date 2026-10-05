@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "yubal",
+      "name": "soundify",
       "dependencies": {
         "vanjs-core": "^1.6.0",
       },

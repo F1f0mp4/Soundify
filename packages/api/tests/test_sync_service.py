@@ -3,8 +3,8 @@
 from pathlib import Path
 from unittest.mock import patch
 
-from yubal import AudioCodec, DownloadConfig
-from yubal_api.services.sync_service import SyncService
+from soundify import AudioCodec, DownloadConfig
+from soundify_api.services.sync_service import SyncService
 
 
 class TestSyncServiceAudioQuality:
@@ -19,13 +19,13 @@ class TestSyncServiceAudioQuality:
         )
 
         with patch(
-            "yubal_api.services.sync_service.create_playlist_downloader"
+            "soundify_api.services.sync_service.create_playlist_downloader"
         ) as mock_create:
             mock_create.return_value = None  # We only care about the config
 
             try:
                 service.run(
-                    "https://example.com", None, __import__("yubal").CancelToken()
+                    "https://example.com", None, __import__("soundify").CancelToken()
                 )
             except Exception:
                 pass  # Expected to fail since downloader is None
@@ -49,7 +49,7 @@ class TestSyncServiceAudioQuality:
             )
 
             with patch(
-                "yubal_api.services.sync_service.create_playlist_downloader"
+                "soundify_api.services.sync_service.create_playlist_downloader"
             ) as mock_create:
                 mock_create.return_value = None
 
@@ -57,7 +57,7 @@ class TestSyncServiceAudioQuality:
                     service.run(
                         "https://example.com",
                         None,
-                        __import__("yubal").CancelToken(),
+                        __import__("soundify").CancelToken(),
                     )
                 except Exception:
                     pass

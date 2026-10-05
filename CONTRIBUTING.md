@@ -1,10 +1,10 @@
-# Contributing to yubal
+# Contributing to soundify
 
-Thanks for your interest in yubal! This document explains how you can help.
+Thanks for your interest in soundify! This document explains how you can help.
 
 ## Project Status
 
-yubal is under active solo development and evolving quickly. At this stage, I'm not able to review or merge large feature PRs — they tend to create merge conflicts and review overhead that slow things down.
+soundify is under active solo development and evolving quickly. At this stage, I'm not able to review or merge large feature PRs — they tend to create merge conflicts and review overhead that slow things down.
 
 ## How to Contribute
 
@@ -17,7 +17,7 @@ Before reporting a bug:
 
 When reporting, please include:
 
-- yubal version
+- soundify version
 - Steps to reproduce
 - Expected vs actual behavior
 - Relevant logs or screenshots

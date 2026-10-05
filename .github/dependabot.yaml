@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/packages/yubal"
+    directory: "/packages/soundify"
     schedule:
       interval: "daily"
     allow:

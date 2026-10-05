@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 
+import { AmbientBackground } from "@/components/layout/ambient-background";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { basePath } from "@/lib/base-path";
@@ -19,9 +20,10 @@ function RootLayout() {
   return (
     <>
       <Toast.Provider />
+      <AmbientBackground />
       <div className="flex min-h-screen flex-col">
         <Header />
-        <main className="m-auto w-full max-w-5xl flex-1 px-4 py-6">
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 pt-4 pb-10 sm:px-6">
           <Outlet />
         </main>
         <Footer />

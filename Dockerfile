@@ -33,7 +33,7 @@ RUN uv sync --package soundify-api --no-dev --frozen --no-cache --no-editable
 RUN uv pip install --python /app/.venv --no-cache bgutil-ytdlp-pot-provider
 
 # Final runtime image
-FROM python:3.12-slim-bookworm
+FROM python:3.14-slim-bookworm
 
 ARG TARGETARCH
 ARG RSGAIN_VERSION=3.6

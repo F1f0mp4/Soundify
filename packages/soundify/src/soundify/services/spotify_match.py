@@ -19,6 +19,7 @@ import logging
 import re
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Protocol
 
 from soundify.lib.matching import match_artists, match_title
 from soundify.models.enums import VideoType
@@ -298,10 +299,22 @@ def match_track(track: SpotifyTrack, results: list[SearchResult]) -> SpotifyMatc
     )
 
 
+class SongSearcher(Protocol):
+    """The only slice of the YouTube Music client the matcher needs.
+
+    Narrower than the full client protocol on purpose, so tests and callers can
+    pass a stub with one method instead of implementing the whole API.
+    """
+
+    def search_songs(
+        self, query: str, limit: int | None = None
+    ) -> list[SearchResult]: ...
+
+
 class SpotifyMatcher:
     """Resolves Spotify tracks to YouTube Music video IDs."""
 
-    def __init__(self, client: object, search_limit: int = SEARCH_LIMIT) -> None:
+    def __init__(self, client: SongSearcher, search_limit: int = SEARCH_LIMIT) -> None:
         """Initialize the matcher.
 
         Args:
@@ -322,10 +335,10 @@ class SpotifyMatcher:
             rather than an exception, so one bad track cannot abort a playlist.
         """
         try:
-            results = self._client.search_songs(  # type: ignore[attr-defined]
+            results = self._client.search_songs(
                 track.search_query, limit=self._search_limit
             )
-        except Exception as e:  # noqa: BLE001 - one track must not kill the job
+        except Exception as e:
             logger.warning("Search failed for %r: %s", track.search_query, e)
             return SpotifyMatch(
                 track=track,

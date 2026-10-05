@@ -23,7 +23,10 @@ export function Header({ instanceUrl, onBack, onSettings }: HeaderProps = {}) {
     },
     rawHtml(SOUNDIFY_ICON),
   );
-  const title = span({ class: "text-base font-bold text-mist-100" }, "soundify");
+  const title = span(
+    { class: "text-base font-bold text-mist-100" },
+    "soundify",
+  );
 
   const brand = instanceUrl
     ? a(

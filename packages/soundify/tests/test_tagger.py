@@ -47,7 +47,9 @@ class TestTagTrack:
         """Should set all basic metadata fields."""
         mock_audio = MagicMock()
 
-        with patch("soundify.services.tagging_service.MediaFile", return_value=mock_audio):
+        with patch(
+            "soundify.services.tagging_service.MediaFile", return_value=mock_audio
+        ):
             tag_track(Path("/fake/path.opus"), sample_track)
 
         assert mock_audio.title == "Test Song"
@@ -63,7 +65,9 @@ class TestTagTrack:
         """Should set track number and total."""
         mock_audio = MagicMock()
 
-        with patch("soundify.services.tagging_service.MediaFile", return_value=mock_audio):
+        with patch(
+            "soundify.services.tagging_service.MediaFile", return_value=mock_audio
+        ):
             tag_track(Path("/fake/path.opus"), sample_track)
 
         assert mock_audio.track == 5
@@ -73,7 +77,9 @@ class TestTagTrack:
         """Should parse year string to int."""
         mock_audio = MagicMock()
 
-        with patch("soundify.services.tagging_service.MediaFile", return_value=mock_audio):
+        with patch(
+            "soundify.services.tagging_service.MediaFile", return_value=mock_audio
+        ):
             tag_track(Path("/fake/path.opus"), sample_track)
 
         assert mock_audio.year == 2024
@@ -84,7 +90,9 @@ class TestTagTrack:
         cover_bytes = b"\xff\xd8\xff" + b"fake image data"
 
         with (
-            patch("soundify.services.tagging_service.MediaFile", return_value=mock_audio),
+            patch(
+                "soundify.services.tagging_service.MediaFile", return_value=mock_audio
+            ),
             patch("soundify.services.tagging_service.Image") as mock_image,
         ):
             tag_track(Path("/fake/path.opus"), sample_track, cover_bytes)
@@ -97,7 +105,9 @@ class TestTagTrack:
         mock_audio = MagicMock()
         mock_audio.year = None
 
-        with patch("soundify.services.tagging_service.MediaFile", return_value=mock_audio):
+        with patch(
+            "soundify.services.tagging_service.MediaFile", return_value=mock_audio
+        ):
             tag_track(Path("/fake/path.opus"), sample_track_minimal)
 
         # year should not be set (remains None)
@@ -111,7 +121,9 @@ class TestTagTrack:
         mock_audio.track = None
         mock_audio.tracktotal = None
 
-        with patch("soundify.services.tagging_service.MediaFile", return_value=mock_audio):
+        with patch(
+            "soundify.services.tagging_service.MediaFile", return_value=mock_audio
+        ):
             tag_track(Path("/fake/path.opus"), sample_track_minimal)
 
         # track/tracktotal should not be set
@@ -121,7 +133,9 @@ class TestTagTrack:
         """Should handle track without cover art."""
         mock_audio = MagicMock()
 
-        with patch("soundify.services.tagging_service.MediaFile", return_value=mock_audio):
+        with patch(
+            "soundify.services.tagging_service.MediaFile", return_value=mock_audio
+        ):
             tag_track(Path("/fake/path.opus"), sample_track, cover=None)
 
         # images should not be set
@@ -141,7 +155,9 @@ class TestTagTrack:
             video_type=VideoType.OMV,
         )
 
-        with patch("soundify.services.tagging_service.MediaFile", return_value=mock_audio):
+        with patch(
+            "soundify.services.tagging_service.MediaFile", return_value=mock_audio
+        ):
             # Should not raise
             tag_track(Path("/fake/path.opus"), track)
 

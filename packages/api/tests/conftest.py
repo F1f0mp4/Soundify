@@ -12,9 +12,9 @@ from unittest.mock import MagicMock
 from zoneinfo import ZoneInfo
 
 import pytest
+from soundify_api.db.subscription_repository import SubscriptionRepository
 from sqlalchemy.engine import Engine
 from sqlmodel import SQLModel, create_engine
-from soundify_api.db.subscription_repository import SubscriptionRepository
 
 # =============================================================================
 # Database Fixtures

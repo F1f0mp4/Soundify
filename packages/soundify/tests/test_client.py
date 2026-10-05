@@ -3,14 +3,14 @@
 from unittest.mock import MagicMock
 
 import pytest
-from ytmusicapi.auth.types import AuthType
-from ytmusicapi.exceptions import YTMusicServerError
 from soundify.client import YTMusicClient
 from soundify.exceptions import (
     AuthenticationRequiredError,
     TrackNotFoundError,
     UpstreamAPIError,
 )
+from ytmusicapi.auth.types import AuthType
+from ytmusicapi.exceptions import YTMusicServerError
 
 # ============================================================================
 # Fixtures

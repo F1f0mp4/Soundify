@@ -19,7 +19,11 @@ Examples:
 
     Download a complete playlist:
     ```python
-    from soundify import create_playlist_downloader, PlaylistDownloadConfig, DownloadConfig
+    from soundify import (
+        create_playlist_downloader,
+        DownloadConfig,
+        PlaylistDownloadConfig,
+    )
     from pathlib import Path
 
     config = PlaylistDownloadConfig(download=DownloadConfig(base_path=Path("./music")))
@@ -32,18 +36,23 @@ from pathlib import Path
 
 # Internal imports (not exported)
 from soundify.client import YTMusicClient as _YTMusicClient
-from soundify.config import APIConfig, AudioCodec, DownloadConfig, PlaylistDownloadConfig
+from soundify.config import (
+    APIConfig,
+    AudioCodec,
+    DownloadConfig,
+    PlaylistDownloadConfig,
+)
 from soundify.exceptions import (
     AuthenticationRequiredError,
     CancellationError,
     DownloadError,
     PlaylistNotFoundError,
     PlaylistParseError,
+    SoundifyError,
     TrackNotFoundError,
     TrackParseError,
     UnsupportedPlaylistError,
     UpstreamAPIError,
-    SoundifyError,
 )
 from soundify.models.cancel import CancelToken
 from soundify.models.enums import (
@@ -217,13 +226,13 @@ __all__ = [
     "PlaylistParseError",
     "PlaylistProgress",
     "SkipReason",
+    "SoundifyError",
     "TrackMetadata",
     "TrackNotFoundError",
     "TrackParseError",
     "UnsupportedPlaylistError",
     "UpstreamAPIError",
     "VideoType",
-    "SoundifyError",
     "cleanup_part_files",
     "clear_cover_cache",
     "create_downloader",

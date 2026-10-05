@@ -58,12 +58,13 @@ class TestParseSpotifyUrl:
                 "https://open.spotify.com/intl-de/playlist/37i9dQZF1DXcBWIGoYBM5M",
                 ("playlist", "37i9dQZF1DXcBWIGoYBM5M"),
             ),
-            ("spotify:track:4cOdK2wGLETKBW3PvgPWqT", ("track", "4cOdK2wGLETKBW3PvgPWqT")),
+            (
+                "spotify:track:4cOdK2wGLETKBW3PvgPWqT",
+                ("track", "4cOdK2wGLETKBW3PvgPWqT"),
+            ),
         ],
     )
-    def test_parses_supported_links(
-        self, url: str, expected: tuple[str, str]
-    ) -> None:
+    def test_parses_supported_links(self, url: str, expected: tuple[str, str]) -> None:
         assert parse_spotify_url(url) == expected
 
     @pytest.mark.parametrize(

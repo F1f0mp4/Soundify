@@ -4,8 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
-from ytmusicapi.exceptions import YTMusicServerError
-from ytmusicapi.models.lyrics import LyricLine
 from soundify.services.lyrics import (
     LrclibFetcher,
     LyricsQuery,
@@ -15,6 +13,8 @@ from soundify.services.lyrics import (
     _payload_to_lrc,
     _timed_lyrics_to_lrc,
 )
+from ytmusicapi.exceptions import YTMusicServerError
+from ytmusicapi.models.lyrics import LyricLine
 
 
 class TestFormatLrcTimestamp:

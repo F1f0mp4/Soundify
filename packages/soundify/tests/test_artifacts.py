@@ -7,7 +7,10 @@ import pytest
 from soundify.models.enums import ContentKind, DownloadStatus, VideoType
 from soundify.models.results import DownloadResult
 from soundify.models.track import PlaylistInfo, TrackMetadata
-from soundify.services.artifacts import PlaylistArtifactsProtocol, PlaylistArtifactsService
+from soundify.services.artifacts import (
+    PlaylistArtifactsProtocol,
+    PlaylistArtifactsService,
+)
 
 
 class TestPlaylistArtifactsProtocol:

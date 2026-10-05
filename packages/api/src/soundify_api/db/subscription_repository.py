@@ -5,7 +5,11 @@ from uuid import UUID
 from sqlalchemy import Engine
 from sqlmodel import Session, col, select
 
-from soundify_api.db.subscription import Subscription, SubscriptionFields, SubscriptionType
+from soundify_api.db.subscription import (
+    Subscription,
+    SubscriptionFields,
+    SubscriptionType,
+)
 
 
 class SubscriptionRepository:

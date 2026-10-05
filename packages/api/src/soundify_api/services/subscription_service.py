@@ -17,7 +17,11 @@ from soundify_api.api.exceptions import (
     SubscriptionConflictError,
     SubscriptionNotFoundError,
 )
-from soundify_api.db.subscription import Subscription, SubscriptionFields, SubscriptionType
+from soundify_api.db.subscription import (
+    Subscription,
+    SubscriptionFields,
+    SubscriptionType,
+)
 from soundify_api.services.playlist_info_service import PlaylistInfoService
 from soundify_api.services.protocols import SubscriptionRepository
 

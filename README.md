@@ -14,11 +14,11 @@ Scheduled sync · synced lyrics · media-server ready
 
 Soundify is a fork of [yubal](https://github.com/guillevc/yubal) by [@guillevc](https://github.com/guillevc) (MIT), rebuilt around three changes:
 
-| | |
-| --- | --- |
+|                                  |                                                                                                                                                                                                                                                           |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Downloads that actually work** | yt-dlp is pinned to the YouTube clients that serve audio without a PO token. Upstream leaves client choice to yt-dlp, which switches to `web_creator`/`web_music` as soon as cookies are present — both need a token, so every track fails with HTTP 403. |
-| **Spotify links** | Paste a Spotify track, album or playlist. Soundify reads the track list from Spotify's public embed pages (no API key, no account), matches each track on YouTube Music, and tags from there. |
-| **A new interface** | Dark glass over an ambient backdrop, ring metrics, an original identity. |
+| **Spotify links**                | Paste a Spotify track, album or playlist. Soundify reads the track list from Spotify's public embed pages (no API key, no account), matches each track on YouTube Music, and tags from there.                                                             |
+| **A new interface**              | Dark glass over an ambient backdrop, ring metrics, an original identity.                                                                                                                                                                                  |
 
 Everything else — tagging, deduplication, scheduling, the M3U layout, the browser extension — is upstream's work.
 
@@ -69,36 +69,36 @@ The bundled `compose.yaml` builds from source. Set `PUID`/`PGID` to match your h
 
 ## Configuration
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `PUID` / `PGID` | User/group ID for file ownership | `1000` |
-| `SOUNDIFY_AUDIO_FORMAT` | `opus`, `mp3`, or `m4a` | `opus` |
-| `SOUNDIFY_AUDIO_QUALITY` | Transcode quality (0=best, 10=worst) | `0` |
-| `SOUNDIFY_PLAYER_CLIENTS` | yt-dlp YouTube clients, in order | `["visionos","web_embedded"]` |
-| `SOUNDIFY_POT_PROVIDER_URL` | PO token provider, e.g. `http://bgutil:4416` | — |
-| `SOUNDIFY_DOWNLOAD_SLEEP_INTERVAL` | Seconds between downloads | `0` |
-| `SOUNDIFY_SCHEDULER_ENABLED` | Automatic scheduled sync | `true` |
-| `SOUNDIFY_SCHEDULER_CRON` | Cron schedule for auto-sync | `0 0 * * *` |
-| `SOUNDIFY_FETCH_LYRICS` | Fetch lyrics from lrclib.net | `true` |
-| `SOUNDIFY_DOWNLOAD_UGC` | Download user uploads to `_Unofficial/` | `false` |
-| `SOUNDIFY_REPLAYGAIN` | Apply ReplayGain tags | `true` |
-| `SOUNDIFY_TZ` | Timezone (IANA) | `UTC` |
+| Variable                           | Description                                  | Default                       |
+| ---------------------------------- | -------------------------------------------- | ----------------------------- |
+| `PUID` / `PGID`                    | User/group ID for file ownership             | `1000`                        |
+| `SOUNDIFY_AUDIO_FORMAT`            | `opus`, `mp3`, or `m4a`                      | `opus`                        |
+| `SOUNDIFY_AUDIO_QUALITY`           | Transcode quality (0=best, 10=worst)         | `0`                           |
+| `SOUNDIFY_PLAYER_CLIENTS`          | yt-dlp YouTube clients, in order             | `["visionos","web_embedded"]` |
+| `SOUNDIFY_POT_PROVIDER_URL`        | PO token provider, e.g. `http://bgutil:4416` | —                             |
+| `SOUNDIFY_DOWNLOAD_SLEEP_INTERVAL` | Seconds between downloads                    | `0`                           |
+| `SOUNDIFY_SCHEDULER_ENABLED`       | Automatic scheduled sync                     | `true`                        |
+| `SOUNDIFY_SCHEDULER_CRON`          | Cron schedule for auto-sync                  | `0 0 * * *`                   |
+| `SOUNDIFY_FETCH_LYRICS`            | Fetch lyrics from lrclib.net                 | `true`                        |
+| `SOUNDIFY_DOWNLOAD_UGC`            | Download user uploads to `_Unofficial/`      | `false`                       |
+| `SOUNDIFY_REPLAYGAIN`              | Apply ReplayGain tags                        | `true`                        |
+| `SOUNDIFY_TZ`                      | Timezone (IANA)                              | `UTC`                         |
 
 <details>
 <summary>All options</summary>
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `SOUNDIFY_HOST` | Server bind address | `127.0.0.1` |
-| `SOUNDIFY_PORT` | Server port | `8000` |
-| `SOUNDIFY_DATA` | Music library output | `/app/data` |
-| `SOUNDIFY_CONFIG` | Config directory | `/app/config` |
-| `SOUNDIFY_LOG_LEVEL` | `DEBUG`, `INFO`, `WARNING`, `ERROR` | `INFO` |
-| `SOUNDIFY_ASCII_FILENAMES` | Transliterate unicode to ASCII | `false` |
-| `SOUNDIFY_BASE_PATH` | URL base path for reverse-proxy subfolders | — |
-| `SOUNDIFY_CORS_ORIGINS` | Allowed CORS origins | `["*"]` |
-| `SOUNDIFY_JOB_TIMEOUT_SECONDS` | Job execution timeout | `1800` |
-| `SOUNDIFY_TEMP` | Temp directory | System temp |
+| Variable                       | Description                                | Default       |
+| ------------------------------ | ------------------------------------------ | ------------- |
+| `SOUNDIFY_HOST`                | Server bind address                        | `127.0.0.1`   |
+| `SOUNDIFY_PORT`                | Server port                                | `8000`        |
+| `SOUNDIFY_DATA`                | Music library output                       | `/app/data`   |
+| `SOUNDIFY_CONFIG`              | Config directory                           | `/app/config` |
+| `SOUNDIFY_LOG_LEVEL`           | `DEBUG`, `INFO`, `WARNING`, `ERROR`        | `INFO`        |
+| `SOUNDIFY_ASCII_FILENAMES`     | Transliterate unicode to ASCII             | `false`       |
+| `SOUNDIFY_BASE_PATH`           | URL base path for reverse-proxy subfolders | —             |
+| `SOUNDIFY_CORS_ORIGINS`        | Allowed CORS origins                       | `["*"]`       |
+| `SOUNDIFY_JOB_TIMEOUT_SECONDS` | Job execution timeout                      | `1800`        |
+| `SOUNDIFY_TEMP`                | Temp directory                             | System temp   |
 
 </details>
 
@@ -133,7 +133,7 @@ Firefox is easier if Safari gives you trouble: `--cookies-from-browser firefox`,
 Measured on 2026-09-12, so you know what to expect:
 
 - Tracks that are **embeddable** download with **no account at all** (the `web_embedded` client handles them).
-- Tracks behind *"Sign in to confirm your age"* need cookies from a free signed-in account. A PO token does **not** help here — the `mweb` client returns the identical error with and without one, so the optional bgutil sidecar in `compose.yaml` stays off by default.
+- Tracks behind _"Sign in to confirm your age"_ need cookies from a free signed-in account. A PO token does **not** help here — the `mweb` client returns the identical error with and without one, so the optional bgutil sidecar in `compose.yaml` stays off by default.
 
 ## Spotify support
 
@@ -143,11 +143,11 @@ Album track lists come back complete. **Playlist embeds cap at 100 tracks**, so 
 
 ## Media server integration
 
-| Server | Artist linking | Playlists |
-| --- | --- | :---: |
-| **Navidrome** | Works out of the box | ✅ |
-| **Jellyfin** | Enable "Use non-standard artists tags" in library settings | ✅ |
-| **Gonic** | Set `GONIC_MULTI_VALUE_ARTIST=multi` | ❌ |
+| Server        | Artist linking                                             | Playlists |
+| ------------- | ---------------------------------------------------------- | :-------: |
+| **Navidrome** | Works out of the box                                       |    ✅     |
+| **Jellyfin**  | Enable "Use non-standard artists tags" in library settings |    ✅     |
+| **Gonic**     | Set `GONIC_MULTI_VALUE_ARTIST=multi`                       |    ❌     |
 
 > [!NOTE]
 > ReplayGain uses `rsgain`, which the Dockerfile installs for amd64 only. On arm64 (Apple Silicon) it is unavailable and the step is skipped.

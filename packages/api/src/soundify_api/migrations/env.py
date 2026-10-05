@@ -4,12 +4,12 @@ import logging
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
-from sqlmodel import SQLModel
 
 # Import ALL models to register them with SQLModel.metadata
 from soundify_api.db.subscription import Subscription  # noqa: F401
 from soundify_api.settings import get_settings
+from sqlalchemy import engine_from_config, pool
+from sqlmodel import SQLModel
 
 config = context.config
 settings = get_settings()

@@ -29,7 +29,8 @@ def _mock_network_calls() -> Iterator[None]:
             "soundify.services.download_service.fetch_cover", return_value=b"fake cover"
         ),
         patch(
-            "soundify.services.lyrics.httpx.get", return_value=MagicMock(status_code=404)
+            "soundify.services.lyrics.httpx.get",
+            return_value=MagicMock(status_code=404),
         ),
     ):
         yield

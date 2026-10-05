@@ -14,10 +14,10 @@ from soundify.config import APIConfig
 from soundify.exceptions import (
     AuthenticationRequiredError,
     PlaylistNotFoundError,
+    SoundifyError,
     TrackNotFoundError,
     UnsupportedPlaylistError,
     UpstreamAPIError,
-    SoundifyError,
 )
 from soundify.models.enums import SkipReason
 from soundify.models.ytmusic import Album, Playlist, PlaylistTrack, SearchResult

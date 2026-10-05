@@ -37,7 +37,9 @@ class TestFetchCover:
     ) -> None:
         """Should fetch and return cover bytes."""
         mock_resp = mock_urlopen_response(b"fake image data")
-        with patch("soundify.utils.cover.urllib.request.urlopen", return_value=mock_resp):
+        with patch(
+            "soundify.utils.cover.urllib.request.urlopen", return_value=mock_resp
+        ):
             result = fetch_cover("https://example.com/cover.jpg")
         assert result == b"fake image data"
 
@@ -98,7 +100,9 @@ class TestClearCoverCache:
     ) -> None:
         """Should clear all cached covers."""
         mock_resp = mock_urlopen_response(b"image")
-        with patch("soundify.utils.cover.urllib.request.urlopen", return_value=mock_resp):
+        with patch(
+            "soundify.utils.cover.urllib.request.urlopen", return_value=mock_resp
+        ):
             fetch_cover("https://example.com/cover.jpg")
             assert get_cover_cache_size() == 1
             clear_cover_cache()
@@ -117,7 +121,9 @@ class TestGetCoverCacheSize:
     ) -> None:
         """Should return correct number of cached items."""
         mock_resp = mock_urlopen_response(b"image")
-        with patch("soundify.utils.cover.urllib.request.urlopen", return_value=mock_resp):
+        with patch(
+            "soundify.utils.cover.urllib.request.urlopen", return_value=mock_resp
+        ):
             fetch_cover("https://example.com/cover1.jpg")
             assert get_cover_cache_size() == 1
             fetch_cover("https://example.com/cover2.jpg")

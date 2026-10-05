@@ -284,7 +284,7 @@ class MockYTMusicClient:
             raise ValueError("No album configured")
         return self._album
 
-    def search_songs(self, query: str) -> list[SearchResult]:
+    def search_songs(self, query: str, limit: int | None = None) -> list[SearchResult]:
         """Mock search_songs."""
         self.search_songs_calls.append(query)
         return self._search_results

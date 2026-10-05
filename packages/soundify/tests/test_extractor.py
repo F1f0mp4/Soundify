@@ -1163,7 +1163,9 @@ class TestMetadataExtractorService:
         """Should continue when search fails."""
 
         class FailingSearchClient(MockYTMusicClient):
-            def search_songs(self, query: str) -> list[SearchResult]:
+            def search_songs(
+                self, query: str, limit: int | None = None
+            ) -> list[SearchResult]:
                 raise Exception("Search failed")
 
         playlist = Playlist.model_validate(
@@ -1199,7 +1201,9 @@ class TestMetadataExtractorService:
         """Should mark track as unmatched when artist match is low."""
 
         class MismatchedArtistClient(MockYTMusicClient):
-            def search_songs(self, query: str) -> list[SearchResult]:
+            def search_songs(
+                self, query: str, limit: int | None = None
+            ) -> list[SearchResult]:
                 return [
                     SearchResult.model_validate(
                         {

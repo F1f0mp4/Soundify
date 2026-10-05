@@ -6,7 +6,11 @@ from uuid import UUID
 
 from soundify import AudioCodec, PhaseStats
 
-from soundify_api.db.subscription import Subscription, SubscriptionFields, SubscriptionType
+from soundify_api.db.subscription import (
+    Subscription,
+    SubscriptionFields,
+    SubscriptionType,
+)
 from soundify_api.domain.enums import JobSource, JobStatus
 from soundify_api.domain.job import ContentInfo, Job
 

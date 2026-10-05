@@ -22,11 +22,11 @@ from fastapi.openapi.utils import get_openapi
 from pydantic import TypeAdapter
 from rich.console import Console
 from rich.logging import RichHandler
+from soundify import cleanup_part_files
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.responses import HTMLResponse, Response
 from starlette.staticfiles import StaticFiles
 from starlette.types import Scope
-from soundify import cleanup_part_files
 
 from soundify_api.api.container import Services
 from soundify_api.api.exceptions import register_exception_handlers

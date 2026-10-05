@@ -81,7 +81,9 @@ class TestReplayGainServiceApply:
 
         with (
             patch.object(service, "is_available", return_value=True),
-            patch("soundify.services.replaygain.subprocess.run", return_value=mock_result),
+            patch(
+                "soundify.services.replaygain.subprocess.run", return_value=mock_result
+            ),
         ):
             result = service.apply_replaygain(mock_files, AudioCodec.OPUS)
             assert result is True
@@ -97,7 +99,9 @@ class TestReplayGainServiceApply:
 
         with (
             patch.object(service, "is_available", return_value=True),
-            patch("soundify.services.replaygain.subprocess.run", return_value=mock_result),
+            patch(
+                "soundify.services.replaygain.subprocess.run", return_value=mock_result
+            ),
         ):
             result = service.apply_replaygain(mock_files, AudioCodec.OPUS)
             assert result is False

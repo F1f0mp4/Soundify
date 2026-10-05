@@ -521,9 +521,7 @@ class MetadataExtractorService:
         match = self._matcher.match(spotify_track)
 
         if match.video_id is None:
-            logger.info(
-                "Skipped '%s': %s", spotify_track.search_query, match.reason
-            )
+            logger.info("Skipped '%s': %s", spotify_track.search_query, match.reason)
             return None, SkipReason.NO_MATCH
 
         if match.confidence is MatchConfidence.LOW:
@@ -535,7 +533,7 @@ class MetadataExtractorService:
 
         try:
             track = self._client.get_track(match.video_id)
-        except Exception as e:  # noqa: BLE001 - one track must not abort the job
+        except Exception as e:
             logger.warning(
                 "Could not fetch %s for '%s': %s",
                 match.video_id,

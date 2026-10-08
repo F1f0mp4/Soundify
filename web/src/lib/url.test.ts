@@ -42,9 +42,19 @@ const VALID_PATH_BASED_URLS = [
   "https://youtube.com/vi/dQw4w9WgXcQ",
 ];
 
+const VALID_SPOTIFY_URLS = [
+  "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT",
+  "https://open.spotify.com/album/1ATL5GLyefJaxhQzSPVrLX?si=abc123",
+  "https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M?si=abc&pi=xyz",
+  "https://open.spotify.com/intl-de/track/4cOdK2wGLETKBW3PvgPWqT",
+  "spotify:album:1ATL5GLyefJaxhQzSPVrLX",
+];
+
 const INVALID_URLS = [
   ["empty string", ""],
   ["Spotify URL", "https://spotify.com/playlist/abc"],
+  ["Spotify artist", "https://open.spotify.com/artist/0OdUWJ0sBjDrqHygGUXeCF"],
+  ["Spotify short link", "https://spotify.link/abc123"],
   ["SoundCloud URL", "https://soundcloud.com/track/xyz"],
   ["YouTube homepage", "https://youtube.com/"],
   ["YouTube channel", "https://youtube.com/channel/abc"],
@@ -54,6 +64,12 @@ const INVALID_URLS = [
 ] as const;
 
 describe("isValidUrl", () => {
+  describe("valid Spotify URLs", () => {
+    test.each(VALID_SPOTIFY_URLS)("%s", (url) => {
+      expect(isValidUrl(url)).toBe(true);
+    });
+  });
+
   describe("valid YouTube Music URLs", () => {
     test.each(VALID_YOUTUBE_MUSIC_URLS)("accepts %s", (url) => {
       expect(isValidUrl(url)).toBe(true);

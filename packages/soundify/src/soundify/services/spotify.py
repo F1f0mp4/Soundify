@@ -85,6 +85,7 @@ class SpotifyContent:
         tracks: The tracks contained in the entity. A single track yields one.
         truncated: True when the embed page hit EMBED_TRACK_LIMIT, meaning tracks
             beyond that limit are missing.
+        thumbnail_url: Largest cover art image, if the embed carries one.
     """
 
     kind: str
@@ -93,6 +94,7 @@ class SpotifyContent:
     subtitle: str | None
     tracks: list[SpotifyTrack]
     truncated: bool = False
+    thumbnail_url: str | None = None
 
 
 def _split_artists(subtitle: str | None) -> list[str]:
@@ -119,6 +121,25 @@ def _id_from_uri(uri: str | None) -> str:
     if not uri:
         return ""
     return uri.rsplit(":", 1)[-1]
+
+
+def _cover_url(entity: dict[str, Any]) -> str | None:
+    """Pick the largest cover art image from an embed entity.
+
+    Album and playlist embeds carry ``coverArt.sources``; track embeds only have
+    ``visualIdentity.image``, sized by ``maxWidth`` instead of ``width``.
+    """
+    sources = (
+        (entity.get("coverArt") or {}).get("sources")
+        or (entity.get("visualIdentity") or {}).get("image")
+        or []
+    )
+    urls = [
+        (source.get("width") or source.get("maxWidth") or 0, source["url"])
+        for source in sources
+        if isinstance(source, dict) and source.get("url")
+    ]
+    return max(urls)[1] if urls else None
 
 
 def _track_from_entity(entity: dict[str, Any]) -> SpotifyTrack:
@@ -256,6 +277,7 @@ class SpotifyEmbedClient:
                 title=title,
                 subtitle=", ".join(track.artists) or None,
                 tracks=[track] if track.title else [],
+                thumbnail_url=_cover_url(entity),
             )
 
         raw_tracks = entity.get("trackList") or []
@@ -283,4 +305,5 @@ class SpotifyEmbedClient:
             subtitle=entity.get("subtitle"),
             tracks=tracks,
             truncated=truncated,
+            thumbnail_url=_cover_url(entity),
         )

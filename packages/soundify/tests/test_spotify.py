@@ -166,6 +166,26 @@ class TestSpotifyEmbedClient:
         assert content.tracks[0].explicit is True
         assert content.truncated is False
 
+    def test_picks_largest_cover_art(self) -> None:
+        entity = {
+            "type": "playlist",
+            "id": "pl1",
+            "name": "Road Trip",
+            "coverArt": {
+                "sources": [
+                    {"url": "https://i.scdn.co/300", "width": 300, "height": 300},
+                    {"url": "https://i.scdn.co/640", "width": 640, "height": 640},
+                    {"url": "https://i.scdn.co/60", "width": 60, "height": 60},
+                ]
+            },
+            "trackList": [],
+        }
+
+        with patch("httpx.get", return_value=_response(_embed_html(entity))):
+            content = SpotifyEmbedClient().fetch("playlist", "pl1")
+
+        assert content.thumbnail_url == "https://i.scdn.co/640"
+
     def test_flags_truncated_playlists(self) -> None:
         """Playlist embeds stop at 100 tracks, which must not pass unnoticed."""
         entity = {

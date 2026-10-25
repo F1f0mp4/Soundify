@@ -1,4 +1,4 @@
-"""Service for fetching playlist information from YouTube Music."""
+"""Service for fetching playlist information from YouTube Music or Spotify."""
 
 import logging
 from dataclasses import dataclass
@@ -7,11 +7,18 @@ from pathlib import Path
 from soundify import ContentKind, parse_playlist_id
 from soundify.client import YTMusicClient
 from soundify.models.ytmusic import Playlist
-from soundify.utils.url import parse_video_id
+from soundify.services.spotify import SpotifyContent, SpotifyEmbedClient
+from soundify.utils.url import parse_spotify_url, parse_video_id
 
 from soundify_api.domain.job import ContentInfo
 
 logger = logging.getLogger(__name__)
+
+_SPOTIFY_CONTENT_KINDS = {
+    "track": ContentKind.TRACK,
+    "album": ContentKind.ALBUM,
+    "playlist": ContentKind.PLAYLIST,
+}
 
 
 @dataclass(frozen=True)
@@ -33,21 +40,28 @@ class _Classification:
 
 
 class PlaylistInfoService:
-    """Service to fetch playlist metadata from YouTube Music."""
+    """Service to fetch playlist metadata from YouTube Music or Spotify."""
 
-    def __init__(self, cookies_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        cookies_path: Path | None = None,
+        spotify_client: SpotifyEmbedClient | None = None,
+    ) -> None:
         """Initialize the service.
 
         Args:
             cookies_path: Optional path to cookies.txt for authenticated requests.
+            spotify_client: Reads metadata from Spotify links. Defaults to
+                SpotifyEmbedClient.
         """
         self._client = YTMusicClient(cookies_path=cookies_path)
+        self._spotify = spotify_client or SpotifyEmbedClient()
 
     def get_playlist_metadata(self, url: str) -> PlaylistMetadata:
         """Get the metadata of a playlist from its URL.
 
         Args:
-            url: YouTube Music playlist URL.
+            url: YouTube Music or Spotify playlist URL.
 
         Returns:
             PlaylistMetadata containing title and thumbnail URL.
@@ -59,6 +73,11 @@ class PlaylistInfoService:
             UnsupportedPlaylistError: If playlist type is not supported (422).
             UpstreamAPIError: If API request fails (502).
         """
+        if spotify := self._fetch_spotify(url):
+            return PlaylistMetadata(
+                title=spotify.title, thumbnail_url=spotify.thumbnail_url
+            )
+
         playlist_id = parse_playlist_id(url)
         playlist = self._client.get_playlist(playlist_id)
         title = playlist.title or "Unknown Playlist"
@@ -66,14 +85,14 @@ class PlaylistInfoService:
         return PlaylistMetadata(title=title, thumbnail_url=thumbnail_url)
 
     def get_content_info(self, url: str) -> ContentInfo:
-        """Get content info for any supported YouTube URL.
+        """Get content info for any supported YouTube or Spotify URL.
 
         Returns quick metadata (title, artist, kind, track count, year,
         thumbnail) from a single API call without running the full
         extraction pipeline.
 
         Args:
-            url: YouTube Music URL (playlist, album, or single track).
+            url: YouTube Music or Spotify URL (playlist, album, or single track).
 
         Returns:
             ContentInfo with metadata from the URL.
@@ -87,10 +106,29 @@ class PlaylistInfoService:
             UnsupportedPlaylistError: If playlist type is not supported (422).
             UpstreamAPIError: If API request fails (502).
         """
+        if spotify := self._fetch_spotify(url):
+            return ContentInfo(
+                title=spotify.title,
+                artist=spotify.subtitle or "Unknown Artist",
+                track_count=len(spotify.tracks),
+                playlist_id=spotify.spotify_id,
+                url=url,
+                thumbnail_url=spotify.thumbnail_url,
+                kind=_SPOTIFY_CONTENT_KINDS.get(spotify.kind, ContentKind.PLAYLIST),
+            )
+
         video_id = parse_video_id(url)
         if video_id:
             return self._get_track_content_info(video_id, url)
         return self._get_playlist_content_info(url)
+
+    def _fetch_spotify(self, url: str) -> SpotifyContent | None:
+        """Fetch Spotify content, or return None if this is not a Spotify URL."""
+        parsed = parse_spotify_url(url)
+        if parsed is None:
+            return None
+        kind, spotify_id = parsed
+        return self._spotify.fetch(kind, spotify_id)
 
     def _get_playlist_content_info(self, url: str) -> ContentInfo:
         """Build ContentInfo from a playlist/album URL."""

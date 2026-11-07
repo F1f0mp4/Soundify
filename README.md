@@ -2,7 +2,7 @@
 
 # Soundify
 
-**Self-hosted music library.** Paste a link — YouTube Music or Spotify — and get tagged, organised audio.
+**Self-hosted music library.** Paste a link — YouTube Music, Spotify, Apple Music or SoundCloud — and get tagged, organised audio.
 
 Scheduled sync · synced lyrics · media-server ready
 
@@ -17,7 +17,7 @@ Soundify is a fork of [yubal](https://github.com/guillevc/yubal) by [@guillevc](
 |                                  |                                                                                                                                                                                                                                                           |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Downloads that actually work** | yt-dlp is pinned to the YouTube clients that serve audio without a PO token. Upstream leaves client choice to yt-dlp, which switches to `web_creator`/`web_music` as soon as cookies are present — both need a token, so every track fails with HTTP 403. |
-| **Spotify links**                | Paste a Spotify track, album or playlist. Soundify reads the track list from Spotify's public embed pages (no API key, no account), matches each track on YouTube Music, and tags from there.                                                             |
+| **Links from any service**       | Paste a Spotify, Apple Music or SoundCloud track, album or playlist. Soundify reads the track list (no API keys, no accounts), matches each track on YouTube Music, and tags from there. Playlists from all four services can be subscribed to.           |
 | **A new interface**              | Dark glass over an ambient backdrop, ring metrics, an original identity.                                                                                                                                                                                  |
 
 Everything else — tagging, deduplication, scheduling, the M3U layout, the browser extension — is upstream's work.
@@ -49,8 +49,10 @@ Each track lives in its album folder; playlists reference it, so a track appeari
 ## Features
 
 - **Web UI** — real-time progress, job queue, works on mobile
-- **YouTube Music & Spotify** — albums, playlists and single tracks
-- **Scheduled sync** — subscribe to playlists; new tracks arrive automatically
+- **YouTube Music, Spotify, Apple Music & SoundCloud** — albums, playlists and single tracks
+- **Scheduled sync** — subscribe to a playlist or album from any of them; new tracks arrive automatically
+- **Whole playlists by default** — no track cap unless you set one
+- **Playlist covers** — saved next to each playlist's M3U, taken from the service the playlist came from
 - **Smart deduplication** — one file, referenced everywhere
 - **Synced lyrics** — `.lrc` files from lrclib.net, with a YouTube Music fallback
 - **ReplayGain** — track gain, plus album gain on complete albums
@@ -135,11 +137,25 @@ Measured on 2026-09-12, so you know what to expect:
 - Tracks that are **embeddable** download with **no account at all** (the `web_embedded` client handles them).
 - Tracks behind _"Sign in to confirm your age"_ need cookies from a free signed-in account. A PO token does **not** help here — the `mweb` client returns the identical error with and without one, so the optional bgutil sidecar in `compose.yaml` stays off by default.
 
-## Spotify support
+## Subscriptions
 
-Spotify's Web API is not used: since February 2026 a Development Mode app only works while its owner holds Spotify Premium, and editorial `37i9dQZF1D…` playlists have returned 404 for new apps since November 2024. Soundify reads the public embed pages instead, which need no credentials and still serve editorial playlists.
+Subscribe to a playlist or album on the **Playlists** page and Soundify re-syncs it on the schedule, downloading only what is new. Each subscription shows a badge for its service (YouTube Music, Spotify, Apple Music or SoundCloud). Single-track links are refused, since a lone track never gains new songs — download those from the home page instead.
 
-Album track lists come back complete. **Playlist embeds cap at 100 tracks**, so longer playlists are truncated and flagged in the logs. Titles, artists and durations drive the YouTube Music match; album, track number, year and cover art are taken from YouTube Music afterwards.
+The **track limit** field (`#`) is empty by default, which means the whole playlist. A number applies only when you type one, and only to that download or subscription. Subscriptions created with a limit show it in the _Limit_ column; click the **×** next to it to remove it, and the next sync picks up the rest of the playlist.
+
+## Spotify, Apple Music and SoundCloud
+
+None of these hand out audio Soundify can use, so they only supply the track list. Each track's title, artists and duration are matched against YouTube Music; album, track number, year and cover art then come from YouTube Music, so tagging is the same as for any other download. A track with no confident match is skipped and listed in the job, never swapped for a cover or a live version.
+
+| Service         | Supported links                                                                            | How it is read                                           | Limits                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Spotify**     | `open.spotify.com` track, album, playlist; `spotify:` URIs                                 | Public embed pages                                       | **Playlists stop at 100 tracks**; longer ones are truncated and flagged                 |
+| **Apple Music** | `music.apple.com` song, album (including `?i=` song links), playlist (`pl.…`)              | Public page data; single songs via the iTunes Lookup API | Very long playlists may list only their first page of tracks; flagged when that happens |
+| **SoundCloud**  | Tracks, sets (playlists and albums), private `/s-…` links, `on.soundcloud.com` short links | yt-dlp                                                   | Reading a set takes about half a second per track; profiles and likes are not supported |
+
+Why no official APIs: Spotify's Web API stopped working for Development Mode apps without Premium in February 2026 and has returned 404 for editorial `37i9dQZF1D…` playlists since November 2024; the Apple Music API needs a paid developer membership. The public pages need no credentials and still serve editorial playlists.
+
+Why SoundCloud is matched rather than downloaded directly: a large share of its catalogue is DRM protected or served as a 30-second preview. Matching gives full-length audio and proper album tags. Independent uploads that are not on YouTube Music (DJ mixes, unreleased tracks) are skipped and reported.
 
 ## Media server integration
 

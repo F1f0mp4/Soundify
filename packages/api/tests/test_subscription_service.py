@@ -231,3 +231,23 @@ class TestDelete:
 
         with pytest.raises(SubscriptionNotFoundError):
             service.delete(sub_id)
+
+
+class TestCreateRejectsSingleTracks:
+    def test_single_track_link_is_rejected(
+        self,
+        service: SubscriptionService,
+        mock_repo: MagicMock,
+        mock_playlist_info: MagicMock,
+    ) -> None:
+        """A subscription follows a playlist for new tracks; a track has none."""
+        from soundify import ContentKind, PlaylistParseError
+
+        mock_repo.get_by_url.return_value = None
+        mock_playlist_info.get_playlist_metadata.return_value = PlaylistMetadata(
+            title="Get Lucky", thumbnail_url=None, kind=ContentKind.TRACK
+        )
+
+        with pytest.raises(PlaylistParseError, match="single track"):
+            service.create("https://music.apple.com/us/song/get-lucky/617154366")
+        mock_repo.create.assert_not_called()

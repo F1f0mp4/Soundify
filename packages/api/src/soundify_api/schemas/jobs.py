@@ -17,10 +17,11 @@ def validate_youtube_music_url(url: str) -> str:
     url = url.strip()
     if not is_supported_url(url):
         raise ValueError(
-            "Invalid URL. Expected a YouTube, YouTube Music, or Spotify URL "
-            "(e.g., https://music.youtube.com/playlist?list=..., "
-            "https://youtube.com/watch?v=..., or "
-            "https://open.spotify.com/album/...)"
+            "Invalid URL. Expected a YouTube, YouTube Music, Spotify, Apple Music "
+            "or SoundCloud URL (e.g., https://music.youtube.com/playlist?list=..., "
+            "https://open.spotify.com/album/..., "
+            "https://music.apple.com/us/playlist/..., or "
+            "https://soundcloud.com/artist/sets/...)"
         )
     return url
 
@@ -37,13 +38,16 @@ class CreateJobRequest(BaseModel):
 
     url: YouTubeMusicUrl = Field(
         description=(
-            "YouTube, YouTube Music, or Spotify playlist, album, or track URL. "
-            "Spotify links are matched to YouTube Music for the audio."
+            "YouTube, YouTube Music, Spotify, Apple Music or SoundCloud playlist, "
+            "album, or track URL. Spotify, Apple Music and SoundCloud tracks are "
+            "matched to YouTube Music for the audio."
         ),
         examples=[
             "https://music.youtube.com/playlist?list=OLAK5uy_...",
             "https://www.youtube.com/watch?v=VIDEO_ID",
             "https://open.spotify.com/album/1ATL5GLyefJaxhQzSPVrLX",
+            "https://music.apple.com/us/album/random-access-memories/617154241",
+            "https://soundcloud.com/flume/sets/selected-by-flume",
         ],
     )
     max_items: int | None = Field(

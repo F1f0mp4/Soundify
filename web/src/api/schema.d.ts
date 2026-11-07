@@ -741,6 +741,15 @@ export interface components {
             };
         };
         /**
+         * MusicSource
+         * @description The service a link points at.
+         *
+         *     Audio always comes from YouTube Music. For the other services soundify reads
+         *     the track list and matches each track to a YouTube Music song.
+         * @enum {string}
+         */
+        MusicSource: "youtube" | "spotify" | "apple_music" | "soundcloud";
+        /**
          * PhaseStats
          * @description Statistics for a processing phase (extraction or download).
          *
@@ -870,6 +879,8 @@ export interface components {
             created_at: string;
             /** Last Synced At */
             last_synced_at: string | null;
+            /** @description The service the subscribed playlist lives on, derived from its URL. */
+            readonly source: components["schemas"]["MusicSource"];
         };
         /**
          * SubscriptionType
@@ -884,6 +895,8 @@ export interface components {
         SubscriptionUpdate: {
             /** Enabled */
             enabled?: boolean | null;
+            /** Max Items */
+            max_items?: number | null;
         };
         /**
          * SyncResponse

@@ -50,12 +50,37 @@ const VALID_SPOTIFY_URLS = [
   "spotify:album:1ATL5GLyefJaxhQzSPVrLX",
 ];
 
+const VALID_APPLE_MUSIC_URLS = [
+  "https://music.apple.com/us/album/random-access-memories/617154241",
+  "https://music.apple.com/gb/album/617154241",
+  "https://music.apple.com/us/album/ram/617154241?i=617154366",
+  "https://music.apple.com/us/song/get-lucky/617154366",
+  "https://music.apple.com/us/playlist/todays-hits/pl.f4d106fed2bd41149aaacabb233eb5eb",
+  "https://music.apple.com/us/playlist/mine/pl.u-8aAVZAxCLgo2Ze",
+];
+
+const VALID_SOUNDCLOUD_URLS = [
+  "https://soundcloud.com/flume/say-nothing-feat-may-a",
+  "https://m.soundcloud.com/flume/say-nothing-feat-may-a",
+  "https://soundcloud.com/flume/sets/selected-by-flume",
+  "https://soundcloud.com/flume/sets/selected-by-flume?si=abc",
+  "https://soundcloud.com/flume/sets/private/s-AbC123",
+  "https://on.soundcloud.com/AbCdEf123",
+];
+
 const INVALID_URLS = [
   ["empty string", ""],
   ["Spotify URL", "https://spotify.com/playlist/abc"],
   ["Spotify artist", "https://open.spotify.com/artist/0OdUWJ0sBjDrqHygGUXeCF"],
   ["Spotify short link", "https://spotify.link/abc123"],
-  ["SoundCloud URL", "https://soundcloud.com/track/xyz"],
+  ["SoundCloud profile", "https://soundcloud.com/flume"],
+  ["SoundCloud likes", "https://soundcloud.com/flume/likes"],
+  ["SoundCloud discover", "https://soundcloud.com/discover/sets/charts-top"],
+  ["Apple Music artist", "https://music.apple.com/us/artist/daft-punk/5468295"],
+  [
+    "Apple Music playlist without pl. ID",
+    "https://music.apple.com/us/playlist/x/123",
+  ],
   ["YouTube homepage", "https://youtube.com/"],
   ["YouTube channel", "https://youtube.com/channel/abc"],
   ["plain text", "not a url"],
@@ -66,6 +91,18 @@ const INVALID_URLS = [
 describe("isValidUrl", () => {
   describe("valid Spotify URLs", () => {
     test.each(VALID_SPOTIFY_URLS)("%s", (url) => {
+      expect(isValidUrl(url)).toBe(true);
+    });
+  });
+
+  describe("valid Apple Music URLs", () => {
+    test.each(VALID_APPLE_MUSIC_URLS)("accepts %s", (url) => {
+      expect(isValidUrl(url)).toBe(true);
+    });
+  });
+
+  describe("valid SoundCloud URLs", () => {
+    test.each(VALID_SOUNDCLOUD_URLS)("accepts %s", (url) => {
       expect(isValidUrl(url)).toBe(true);
     });
   });

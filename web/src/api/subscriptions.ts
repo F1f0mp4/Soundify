@@ -4,6 +4,7 @@ import type { components } from "./schema";
 
 export type Subscription = components["schemas"]["SubscriptionResponse"];
 export type SchedulerStatus = components["schemas"]["SchedulerStatus"];
+export type SubscriptionUpdate = components["schemas"]["SubscriptionUpdate"];
 
 type AddSubscriptionResult =
   { success: true; id: string } | { success: false; error: string };
@@ -42,7 +43,7 @@ export async function addSubscription(
 
 export async function updateSubscription(
   id: string,
-  updates: { enabled?: boolean },
+  updates: SubscriptionUpdate,
 ): Promise<Subscription | null> {
   const { data, error } = await api.PATCH("/subscriptions/{subscription_id}", {
     params: { path: { subscription_id: id } },

@@ -6,6 +6,7 @@ from uuid import UUID
 
 from soundify import (
     AuthenticationRequiredError,
+    ContentKind,
     PlaylistNotFoundError,
     PlaylistParseError,
     UnsupportedPlaylistError,
@@ -80,6 +81,12 @@ class SubscriptionService:
         except Exception as e:
             logger.warning("Unexpected error fetching metadata for %s: %s", url, e)
             raise MetadataFetchError(str(e), upstream_error=type(e).__name__) from e
+
+        if metadata.kind == ContentKind.TRACK:
+            raise PlaylistParseError(
+                "Subscriptions follow a playlist or album for new tracks. "
+                "This link is a single track; download it from the home page instead."
+            )
 
         subscription = Subscription(
             type=SubscriptionType.PLAYLIST,

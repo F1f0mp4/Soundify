@@ -16,6 +16,19 @@ class VideoType(StrEnum):
     PODCAST_EPISODE = "MUSIC_VIDEO_TYPE_PODCAST_EPISODE"  # Podcast episode
 
 
+class MusicSource(StrEnum):
+    """The service a link points at.
+
+    Audio always comes from YouTube Music. For the other services soundify reads
+    the track list and matches each track to a YouTube Music song.
+    """
+
+    YOUTUBE = "youtube"
+    SPOTIFY = "spotify"
+    APPLE_MUSIC = "apple_music"
+    SOUNDCLOUD = "soundcloud"
+
+
 class DownloadStatus(StrEnum):
     """Status of a download operation."""
 

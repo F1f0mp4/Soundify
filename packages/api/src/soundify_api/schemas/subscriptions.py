@@ -2,7 +2,9 @@
 
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
+from soundify.models.enums import MusicSource
+from soundify.utils.url import detect_source
 
 from soundify_api.db.subscription import SubscriptionType
 from soundify_api.schemas.jobs import YouTubeMusicUrl
@@ -17,9 +19,14 @@ class SubscriptionCreate(BaseModel):
 
 
 class SubscriptionUpdate(BaseModel):
-    """Request to update a subscription."""
+    """Request to update a subscription.
+
+    Send ``max_items: null`` to remove a track limit so the whole playlist
+    syncs; leave the field out to keep the current limit.
+    """
 
     enabled: bool | None = None
+    max_items: int | None = Field(default=None, ge=1, le=10000)
 
 
 class SubscriptionResponse(BaseModel):
@@ -36,6 +43,12 @@ class SubscriptionResponse(BaseModel):
     last_synced_at: UTCDateTime | None
 
     model_config = {"from_attributes": True}
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def source(self) -> MusicSource:
+        """The service the subscribed playlist lives on, derived from its URL."""
+        return detect_source(self.url) or MusicSource.YOUTUBE
 
 
 class SubscriptionListResponse(BaseModel):

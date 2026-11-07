@@ -162,7 +162,7 @@ class TestSpotifyEmbedClient:
 
         assert content.subtitle == "Drake"
         assert [t.title for t in content.tracks] == ["Survival", "Nonstop"]
-        assert content.tracks[0].spotify_id == "t1"
+        assert content.tracks[0].source_id == "t1"
         assert content.tracks[0].explicit is True
         assert content.truncated is False
 

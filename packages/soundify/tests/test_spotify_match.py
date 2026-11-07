@@ -19,7 +19,7 @@ def _track(
     duration_ms: int = 200_000,
 ) -> SpotifyTrack:
     return SpotifyTrack(
-        spotify_id="sp1",
+        source_id="sp1",
         title=title,
         artists=["Violet Harbour"] if artists is None else artists,
         duration_ms=duration_ms,

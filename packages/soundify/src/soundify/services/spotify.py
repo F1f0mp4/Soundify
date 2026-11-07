@@ -19,7 +19,6 @@ longer playlists come back truncated and are flagged as such.
 import json
 import logging
 import re
-from dataclasses import dataclass
 from typing import Any
 
 import httpx
@@ -29,6 +28,8 @@ from soundify.exceptions import (
     PlaylistParseError,
     UpstreamAPIError,
 )
+from soundify.models.enums import MusicSource
+from soundify.services.external import ExternalContent, ExternalTrack
 from soundify.utils.url import SPOTIFY_KINDS
 
 logger = logging.getLogger(__name__)
@@ -43,58 +44,10 @@ _NEXT_DATA_PATTERN = re.compile(
 )
 
 
-@dataclass(frozen=True)
-class SpotifyTrack:
-    """A single track as described by Spotify.
-
-    Attributes:
-        spotify_id: The Spotify track ID.
-        title: Track title.
-        artists: Artist names, primary artist first.
-        duration_ms: Track duration in milliseconds.
-        explicit: Whether Spotify marks the track as explicit.
-    """
-
-    spotify_id: str
-    title: str
-    artists: list[str]
-    duration_ms: int
-    explicit: bool = False
-
-    @property
-    def duration_seconds(self) -> int:
-        """Duration rounded to whole seconds, for comparison with YouTube Music."""
-        return round(self.duration_ms / 1000)
-
-    @property
-    def search_query(self) -> str:
-        """Query string used to search YouTube Music for this track."""
-        primary = self.artists[0] if self.artists else ""
-        return f"{primary} {self.title}".strip()
-
-
-@dataclass(frozen=True)
-class SpotifyContent:
-    """A Spotify track, album or playlist and the tracks it contains.
-
-    Attributes:
-        kind: One of "track", "album" or "playlist".
-        spotify_id: The Spotify ID of the entity itself.
-        title: Display title of the entity.
-        subtitle: Album artist for albums, owner for playlists, artists for tracks.
-        tracks: The tracks contained in the entity. A single track yields one.
-        truncated: True when the embed page hit EMBED_TRACK_LIMIT, meaning tracks
-            beyond that limit are missing.
-        thumbnail_url: Largest cover art image, if the embed carries one.
-    """
-
-    kind: str
-    spotify_id: str
-    title: str
-    subtitle: str | None
-    tracks: list[SpotifyTrack]
-    truncated: bool = False
-    thumbnail_url: str | None = None
+# Spotify readers return the shared external shapes. The aliases keep the
+# Spotify-specific names readable at call sites.
+SpotifyTrack = ExternalTrack
+SpotifyContent = ExternalContent
 
 
 def _split_artists(subtitle: str | None) -> list[str]:
@@ -150,7 +103,7 @@ def _track_from_entity(entity: dict[str, Any]) -> SpotifyTrack:
         if (name := (artist.get("name") or "").strip())
     ]
     return SpotifyTrack(
-        spotify_id=entity.get("id") or _id_from_uri(entity.get("uri")),
+        source_id=entity.get("id") or _id_from_uri(entity.get("uri")),
         title=entity.get("name") or entity.get("title") or "",
         artists=artists,
         duration_ms=int(entity.get("duration") or 0),
@@ -170,7 +123,7 @@ def _track_from_list_item(item: dict[str, Any]) -> SpotifyTrack | None:
         return None
 
     return SpotifyTrack(
-        spotify_id=spotify_id,
+        source_id=spotify_id,
         title=title,
         artists=_split_artists(item.get("subtitle")),
         duration_ms=int(item.get("duration") or 0),
@@ -272,8 +225,9 @@ class SpotifyEmbedClient:
         if kind == "track":
             track = _track_from_entity(entity)
             return SpotifyContent(
+                source=MusicSource.SPOTIFY,
                 kind=kind,
-                spotify_id=spotify_id,
+                source_id=spotify_id,
                 title=title,
                 subtitle=", ".join(track.artists) or None,
                 tracks=[track] if track.title else [],
@@ -299,8 +253,9 @@ class SpotifyEmbedClient:
             )
 
         return SpotifyContent(
+            source=MusicSource.SPOTIFY,
             kind=kind,
-            spotify_id=spotify_id,
+            source_id=spotify_id,
             title=title,
             subtitle=entity.get("subtitle"),
             tracks=tracks,

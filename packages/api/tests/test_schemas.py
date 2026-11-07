@@ -76,3 +76,63 @@ class TestValidateYouTubeMusicUrl:
         """Should strip whitespace from URL."""
         url = "  https://music.youtube.com/watch?v=abc123  "
         assert validate_youtube_music_url(url) == url.strip()
+
+
+class TestSubscriptionResponseSource:
+    @pytest.mark.parametrize(
+        ("url", "source"),
+        [
+            ("https://music.youtube.com/playlist?list=PLabc", "youtube"),
+            ("https://open.spotify.com/playlist/abc123", "spotify"),
+            ("https://music.apple.com/us/playlist/hits/pl.abc", "apple_music"),
+            ("https://soundcloud.com/flume/sets/selected", "soundcloud"),
+        ],
+    )
+    def test_source_is_derived_from_url(self, url: str, source: str) -> None:
+        from datetime import UTC, datetime
+        from uuid import uuid4
+
+        from soundify_api.db.subscription import Subscription, SubscriptionType
+        from soundify_api.schemas.subscriptions import SubscriptionResponse
+
+        sub = Subscription(
+            id=uuid4(),
+            type=SubscriptionType.PLAYLIST,
+            url=url,
+            name="x",
+            created_at=datetime.now(UTC),
+        )
+
+        response = SubscriptionResponse.model_validate(sub)
+
+        assert response.model_dump(mode="json")["source"] == source
+
+
+class TestValidateNewServices:
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://music.apple.com/us/album/random-access-memories/617154241",
+            "https://music.apple.com/us/playlist/hits/pl.f4d106fed2bd41149aaacabb233eb5eb",
+            "https://soundcloud.com/flume/sets/selected-by-flume",
+            "https://soundcloud.com/flume/say-nothing-feat-may-a",
+        ],
+    )
+    def test_accepts(self, url: str) -> None:
+        assert validate_youtube_music_url(url) == url
+
+
+class TestSubscriptionUpdate:
+    def test_explicit_null_clears_limit(self) -> None:
+        from soundify_api.schemas.subscriptions import SubscriptionUpdate
+
+        update = SubscriptionUpdate.model_validate({"max_items": None})
+
+        assert update.model_dump(exclude_unset=True) == {"max_items": None}
+
+    def test_omitted_limit_is_left_alone(self) -> None:
+        from soundify_api.schemas.subscriptions import SubscriptionUpdate
+
+        update = SubscriptionUpdate.model_validate({"enabled": False})
+
+        assert update.model_dump(exclude_unset=True) == {"enabled": False}

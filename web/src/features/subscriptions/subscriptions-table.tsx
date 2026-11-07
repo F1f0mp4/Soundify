@@ -1,4 +1,5 @@
 import { Panel } from "@/components/common/panel";
+import { SourceIcon } from "@/components/icons/source-icon";
 import type { Subscription } from "@/api/subscriptions";
 import { useTimeAgo } from "@/hooks/use-time-ago";
 import { Button, EmptyState, Spinner, Switch, Table } from "@heroui/react";
@@ -7,6 +8,7 @@ import {
   ListMusicIcon,
   RefreshCwIcon,
   Trash2Icon,
+  XIcon,
 } from "lucide-react";
 import { useCallback } from "react";
 
@@ -29,6 +31,7 @@ type SubscriptionsTableProps = {
   isLoading?: boolean;
   isSchedulerEnabled?: boolean;
   onToggleEnabled: (id: string, enabled: boolean) => void;
+  onRemoveLimit: (id: string) => void;
   onSync: (id: string) => void;
   onDelete: (id: string) => void;
 };
@@ -38,6 +41,7 @@ export function SubscriptionsTable({
   isLoading,
   isSchedulerEnabled,
   onToggleEnabled,
+  onRemoveLimit,
   onSync,
   onDelete,
 }: SubscriptionsTableProps) {
@@ -51,24 +55,49 @@ export function SubscriptionsTable({
         case "name":
           return (
             <div className="flex items-center gap-3">
-              {subscription.thumbnail_url ? (
-                <img
-                  alt=""
-                  src={subscription.thumbnail_url}
-                  className="size-10 shrink-0 rounded-md object-cover max-md:hidden"
+              <div className="relative shrink-0 max-md:hidden">
+                {subscription.thumbnail_url ? (
+                  <img
+                    alt=""
+                    src={subscription.thumbnail_url}
+                    className="size-10 rounded-md object-cover"
+                  />
+                ) : (
+                  <div className="bg-surface-tertiary flex size-10 items-center justify-center rounded-md">
+                    <ListMusicIcon className="text-muted size-5" />
+                  </div>
+                )}
+                <SourceIcon
+                  source={subscription.source}
+                  className="ring-background absolute -right-1.5 -bottom-1.5 size-[18px] ring-2"
                 />
-              ) : (
-                <div className="bg-surface-tertiary flex size-10 shrink-0 items-center justify-center rounded-md max-md:hidden">
-                  <ListMusicIcon className="text-muted size-5" />
-                </div>
-              )}
+              </div>
+              {/* Covers are hidden on small screens; keep the source visible. */}
+              <SourceIcon source={subscription.source} className="md:hidden" />
               {subscription.name}
             </div>
           );
         case "lastSynced":
           return <TimeAgo dateString={subscription.last_synced_at} />;
         case "limit":
-          return subscription.max_items ?? "∞";
+          if (subscription.max_items == null) {
+            return <span className="text-muted">All</span>;
+          }
+          return (
+            <div className="flex items-center gap-1">
+              <span className="tnum">{subscription.max_items}</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                isIconOnly
+                aria-label="Remove track limit"
+                className="icon-action size-6 min-w-6"
+                onPress={() => onRemoveLimit(subscription.id)}
+              >
+                <XIcon className="size-3.5" />
+              </Button>
+            </div>
+          );
         case "enabled":
           return (
             <Switch
@@ -112,7 +141,7 @@ export function SubscriptionsTable({
           );
       }
     },
-    [onToggleEnabled, onSync, onDelete],
+    [onToggleEnabled, onRemoveLimit, onSync, onDelete],
   );
 
   return (

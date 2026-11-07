@@ -44,7 +44,9 @@ export function UrlInput({
         )}
       </InputGroup>
       {!isValid && (
-        <FieldError>Enter a YouTube, YouTube Music, or Spotify link</FieldError>
+        <FieldError>
+          Enter a YouTube, Spotify, Apple Music or SoundCloud link
+        </FieldError>
       )}
     </TextField>
   );

@@ -1,17 +1,16 @@
+import { TrackLimitField } from "@/components/common/track-limit-field";
 import { UrlInput } from "@/components/common/url-input";
 import { JobsPanel } from "@/features/jobs/jobs-panel";
 import { useJobs } from "@/features/jobs/jobs-context";
 import { LogsPanel } from "@/features/logs/logs-panel";
 import { StatsRow } from "@/features/stats/stats-row";
 import { isValidUrl } from "@/lib/url";
-import { Button, InputGroup, NumberField } from "@heroui/react";
-import { ArrowRightIcon, HashIcon } from "lucide-react";
+import { Button } from "@heroui/react";
+import { ArrowRightIcon } from "lucide-react";
 import { memo, useState } from "react";
 
-const DEFAULT_MAX_ITEMS = 100;
-
 interface DownloadFormProps {
-  onDownload: (url: string, maxItems: number) => Promise<void>;
+  onDownload: (url: string, maxItems?: number) => Promise<void>;
 }
 
 /**
@@ -22,7 +21,9 @@ const DownloadForm = memo(function DownloadForm({
   onDownload,
 }: DownloadFormProps) {
   const [url, setUrl] = useState("");
-  const [maxItems, setMaxItems] = useState(DEFAULT_MAX_ITEMS);
+  // No limit unless the user types one, and it does not carry over to the
+  // next download.
+  const [maxItems, setMaxItems] = useState<number | undefined>();
 
   const canDownload = isValidUrl(url);
 
@@ -30,6 +31,7 @@ const DownloadForm = memo(function DownloadForm({
     if (canDownload) {
       await onDownload(url, maxItems);
       setUrl("");
+      setMaxItems(undefined);
     }
   };
 
@@ -40,34 +42,16 @@ const DownloadForm = memo(function DownloadForm({
           <UrlInput
             value={url}
             onChange={setUrl}
-            placeholder="Paste a YouTube Music or Spotify link"
+            placeholder="Paste a YouTube, Spotify, Apple Music or SoundCloud link"
           />
         </div>
 
         <div className="flex items-center gap-2.5">
-          <NumberField
-            className="w-24 shrink-0"
-            aria-label="Max number of tracks to download"
+          <TrackLimitField
+            aria-label="Track limit (leave empty to download everything)"
             value={maxItems}
-            onChange={(value) => {
-              if (!Number.isNaN(value) && value >= 1) setMaxItems(value);
-            }}
-            minValue={1}
-            maxValue={10000}
-          >
-            <InputGroup className="rounded-full border-0 bg-transparent">
-              <InputGroup.Prefix>
-                <HashIcon
-                  className="text-muted h-3.5 w-3.5"
-                  strokeWidth={1.25}
-                />
-              </InputGroup.Prefix>
-              <InputGroup.Input
-                placeholder="Max"
-                className="tnum w-full min-w-0 bg-transparent"
-              />
-            </InputGroup>
-          </NumberField>
+            onChange={setMaxItems}
+          />
 
           <Button
             variant="primary"

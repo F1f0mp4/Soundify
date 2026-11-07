@@ -1,27 +1,18 @@
+import { TrackLimitField } from "@/components/common/track-limit-field";
 import { UrlInput } from "@/components/common/url-input";
 import { SubscriptionsTable } from "@/features/subscriptions/subscriptions-table";
 import { useSubscriptions } from "@/features/subscriptions/use-subscriptions";
 import { useScheduleCountdown } from "@/hooks/use-schedule-countdown";
 import { isValidUrl } from "@/lib/url";
-import {
-  Alert,
-  Button,
-  cn,
-  InputGroup,
-  NumberField,
-  Spinner,
-} from "@heroui/react";
+import { Alert, Button, cn, Spinner } from "@heroui/react";
 import {
   CircleQuestionMarkIcon,
-  HashIcon,
   RefreshCw,
   ZapIcon,
   ZapOffIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
-
-const DEFAULT_MAX_ITEMS = 100;
 
 function Stat({
   label,
@@ -56,7 +47,9 @@ function Stat({
 
 export function SubscriptionsPage() {
   const [url, setUrl] = useState("");
-  const [maxItems, setMaxItems] = useState(DEFAULT_MAX_ITEMS);
+  // No limit unless the user types one: a subscription follows the whole
+  // playlist by default.
+  const [maxItems, setMaxItems] = useState<number | undefined>();
   const [isAdding, setIsAdding] = useState(false);
   const {
     subscriptions,
@@ -80,12 +73,17 @@ export function SubscriptionsPage() {
     const success = await addSubscription(url.trim(), maxItems);
     if (success) {
       setUrl("");
+      setMaxItems(undefined);
     }
     setIsAdding(false);
   };
 
   const handleToggleEnabled = async (id: string, enabled: boolean) => {
     await updateSubscription(id, { enabled });
+  };
+
+  const handleRemoveLimit = async (id: string) => {
+    await updateSubscription(id, { max_items: null });
   };
 
   const handleSyncAll = async () => {
@@ -117,29 +115,12 @@ export function SubscriptionsPage() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <NumberField
-              className="w-24 shrink-0"
-              aria-label="Max tracks to sync per run"
+            <TrackLimitField
+              aria-label="Track limit (leave empty to sync the whole playlist)"
               value={maxItems}
-              onChange={(value) => {
-                if (!Number.isNaN(value) && value >= 1) setMaxItems(value);
-              }}
-              minValue={1}
-              maxValue={10000}
-            >
-              <InputGroup className="rounded-full border-0 bg-transparent">
-                <InputGroup.Prefix>
-                  <HashIcon
-                    className="text-muted h-3.5 w-3.5"
-                    strokeWidth={1.25}
-                  />
-                </InputGroup.Prefix>
-                <InputGroup.Input
-                  placeholder="Max"
-                  className="tnum w-full min-w-0 bg-transparent"
-                />
-              </InputGroup>
-            </NumberField>
+              onChange={setMaxItems}
+              isDisabled={isAdding}
+            />
 
             <Button
               variant="primary"
@@ -231,6 +212,7 @@ export function SubscriptionsPage() {
         isLoading={isLoading}
         isSchedulerEnabled={schedulerStatus?.enabled}
         onToggleEnabled={handleToggleEnabled}
+        onRemoveLimit={handleRemoveLimit}
         onSync={syncSubscription}
         onDelete={deleteSubscription}
       />

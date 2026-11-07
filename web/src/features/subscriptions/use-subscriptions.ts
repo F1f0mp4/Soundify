@@ -8,6 +8,7 @@ import {
   updateSubscription as updateSubscriptionApi,
   type SchedulerStatus,
   type Subscription,
+  type SubscriptionUpdate,
 } from "@/api/subscriptions";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { useCallback, useEffect, useState } from "react";
@@ -19,7 +20,7 @@ export interface UseSubscriptionsResult {
   addSubscription: (url: string, maxItems?: number) => Promise<boolean>;
   updateSubscription: (
     id: string,
-    updates: { enabled?: boolean },
+    updates: SubscriptionUpdate,
   ) => Promise<void>;
   deleteSubscription: (id: string) => Promise<void>;
   syncSubscription: (id: string) => Promise<void>;
@@ -51,7 +52,7 @@ export function useSubscriptions(): UseSubscriptionsResult {
   );
 
   const updateSubscription = useCallback(
-    async (id: string, updates: { enabled?: boolean }) => {
+    async (id: string, updates: SubscriptionUpdate) => {
       const result = await updateSubscriptionApi(id, updates);
       if (result === null) {
         showErrorToast("Update failed", "Could not update subscription");

@@ -91,6 +91,24 @@ class TestSubscriptionRepository:
         assert updated.name == "Updated Name"
         assert updated.enabled is False
 
+    def test_update_clears_track_limit(
+        self, repository: SubscriptionRepository
+    ) -> None:
+        """Removing the limit lets the whole playlist sync."""
+        created = repository.create(
+            Subscription(
+                type=SubscriptionType.PLAYLIST,
+                url="https://music.youtube.com/playlist?list=PLlimit",
+                name="Long Playlist",
+                max_items=100,
+            )
+        )
+
+        updated = repository.update(created.id, {"max_items": None})
+
+        assert updated is not None
+        assert updated.max_items is None
+
     def test_delete(self, repository: SubscriptionRepository) -> None:
         """Should delete subscription and return True, or False if not found."""
         sub = Subscription(

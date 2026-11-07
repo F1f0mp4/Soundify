@@ -13,18 +13,13 @@ from soundify.models.progress import ExtractProgress
 from soundify.models.track import PlaylistInfo, TrackMetadata, UnavailableTrack
 from soundify.models.ytmusic import Album, AlbumTrack, Artist, PlaylistTrack, Thumbnail
 from soundify.services.cache import ExtractionCache
-from soundify.services.spotify import SpotifyEmbedClient, SpotifyTrack
+from soundify.services.external import ExternalTrack
+from soundify.services.sources import ExternalSourceReader, is_external_url
+from soundify.services.spotify import SpotifyEmbedClient
 from soundify.services.spotify_match import MatchConfidence, SpotifyMatcher
-from soundify.utils.url import parse_playlist_id, parse_spotify_url, parse_video_id
+from soundify.utils.url import parse_playlist_id, parse_video_id
 
 logger = logging.getLogger(__name__)
-
-# Spotify entity kinds mapped onto soundify's own content kinds.
-_SPOTIFY_CONTENT_KINDS = {
-    "track": ContentKind.TRACK,
-    "album": ContentKind.ALBUM,
-    "playlist": ContentKind.PLAYLIST,
-}
 
 # Supported video types for download
 SUPPORTED_VIDEO_TYPES = frozenset(
@@ -118,6 +113,7 @@ class MetadataExtractorService:
         download_ugc: bool = False,
         spotify_client: SpotifyEmbedClient | None = None,
         matcher: SpotifyMatcher | None = None,
+        sources: ExternalSourceReader | None = None,
     ) -> None:
         """Initialize the service.
 
@@ -126,13 +122,15 @@ class MetadataExtractorService:
             download_ugc: If True, extract UGC tracks as unofficial instead of
                 skipping them. Also covers tracks whose video type is missing
                 from the API.
-            spotify_client: Reads track lists from Spotify links. Defaults to
-                the public embed reader.
-            matcher: Resolves Spotify tracks to YouTube Music videos.
+            spotify_client: Reads track lists from Spotify links. Ignored when
+                ``sources`` is given.
+            matcher: Resolves external tracks to YouTube Music videos.
+            sources: Reads track lists from Spotify, Apple Music and SoundCloud
+                links. Defaults to the built-in readers.
         """
         self._client = client
         self._download_ugc = download_ugc
-        self._spotify = spotify_client or SpotifyEmbedClient()
+        self._sources = sources or ExternalSourceReader(spotify=spotify_client)
         self._matcher = matcher or SpotifyMatcher(client)
 
     # ============================================================================
@@ -198,10 +196,11 @@ class MetadataExtractorService:
             >>> for progress in extractor.extract(url):
             ...     print(f"[{progress.current}/{progress.total}]")
         """
-        # Spotify links carry no playable audio, so they are resolved to
-        # YouTube Music videos first and then extracted like anything else.
-        if parse_spotify_url(url):
-            yield from self._extract_spotify_as_progress(url, max_items, cancel_token)
+        # Spotify, Apple Music and SoundCloud links carry no audio soundify can
+        # take, so their tracks are resolved to YouTube Music videos first and
+        # then extracted like anything else.
+        if is_external_url(url):
+            yield from self._extract_external_as_progress(url, max_items, cancel_token)
             return
 
         # Check if this is a single track URL
@@ -415,15 +414,16 @@ class MetadataExtractorService:
                 detail,
             )
 
-    def _extract_spotify_as_progress(
+    def _extract_external_as_progress(
         self,
         url: str,
         max_items: int | None = None,
         cancel_token: CancelToken | None = None,
     ) -> Iterator[ExtractProgress]:
-        """Extract a Spotify track, album or playlist through YouTube Music.
+        """Extract an external track, album or playlist through YouTube Music.
 
-        Spotify supplies the track list, titles, artists and durations. Each
+        The service (Spotify, Apple Music or SoundCloud) supplies the track
+        list, titles, artists and durations. Each
         track is then matched to a YouTube Music song and run through the normal
         per-track pipeline, so album, track number, year and cover art still
         come from YouTube Music and tagging is unchanged.
@@ -433,7 +433,7 @@ class MetadataExtractorService:
         song is visible in the UI instead of vanishing from the playlist.
 
         Args:
-            url: Spotify track, album or playlist URL.
+            url: Spotify, Apple Music or SoundCloud URL.
             max_items: Maximum number of tracks to extract.
             cancel_token: Optional token for cancellation support.
 
@@ -442,18 +442,16 @@ class MetadataExtractorService:
             could not be matched.
 
         Raises:
-            TrackParseError: If the Spotify URL cannot be parsed.
-            PlaylistNotFoundError: If Spotify has no such entity.
-            UpstreamAPIError: If Spotify cannot be reached or read.
+            TrackParseError: If the URL cannot be parsed.
+            PlaylistNotFoundError: If the service has no such entity.
+            UpstreamAPIError: If the service cannot be reached or read.
             CancellationError: If cancel_token becomes cancelled.
         """
-        parsed = parse_spotify_url(url)
-        if parsed is None:
-            raise TrackParseError(f"Could not parse Spotify URL: {url}")
-        kind, spotify_id = parsed
-
-        content = self._spotify.fetch(kind, spotify_id)
+        content = self._sources.fetch(url)
+        if content is None:
+            raise TrackParseError(f"Could not parse URL: {url}")
         self._check_cancellation(cancel_token)
+        source = content.source.value
 
         tracks = content.tracks
         playlist_total = len(tracks)
@@ -462,34 +460,39 @@ class MetadataExtractorService:
             tracks = tracks[:max_items]
 
         playlist_info = PlaylistInfo(
-            playlist_id=spotify_id,
+            playlist_id=content.source_id,
             title=content.title,
-            cover_url=None,
-            kind=_SPOTIFY_CONTENT_KINDS.get(kind, ContentKind.PLAYLIST),
+            # Saved as the playlist's sidecar cover next to its M3U.
+            cover_url=content.thumbnail_url,
+            kind=content.content_kind,
             author=content.subtitle,
             unavailable_tracks=[],
         )
 
         logger.info(
-            "Extracting Spotify %s '%s' (%d tracks)", kind, content.title, len(tracks)
+            "Extracting %s %s '%s' (%d tracks)",
+            source,
+            content.kind,
+            content.title,
+            len(tracks),
         )
 
         unavailable: list[UnavailableTrack] = []
         skipped_by_reason: dict[SkipReason, int] = {}
         total = len(tracks)
 
-        for index, spotify_track in enumerate(tracks, start=1):
+        for index, external_track in enumerate(tracks, start=1):
             self._check_cancellation(cancel_token)
 
-            metadata, skip_reason = self._resolve_spotify_track(spotify_track)
+            metadata, skip_reason = self._resolve_external_track(external_track)
 
             if metadata is None:
                 reason = skip_reason or SkipReason.NO_MATCH
                 skipped_by_reason[reason] = skipped_by_reason.get(reason, 0) + 1
                 unavailable.append(
                     UnavailableTrack(
-                        title=spotify_track.title,
-                        artists=list(spotify_track.artists),
+                        title=external_track.title,
+                        artists=list(external_track.artists),
                         album=None,
                         reason=reason,
                     )
@@ -506,28 +509,28 @@ class MetadataExtractorService:
                 ),
             )
 
-    def _resolve_spotify_track(
-        self, spotify_track: SpotifyTrack
+    def _resolve_external_track(
+        self, external_track: ExternalTrack
     ) -> tuple[TrackMetadata | None, SkipReason | None]:
-        """Match one Spotify track to YouTube Music and extract its metadata.
+        """Match one external track to YouTube Music and extract its metadata.
 
         Args:
-            spotify_track: The Spotify track to resolve.
+            external_track: The track to resolve.
 
         Returns:
             Tuple of (metadata, skip_reason), the same shape the YouTube Music
             per-track pipeline returns.
         """
-        match = self._matcher.match(spotify_track)
+        match = self._matcher.match(external_track)
 
         if match.video_id is None:
-            logger.info("Skipped '%s': %s", spotify_track.search_query, match.reason)
+            logger.info("Skipped '%s': %s", external_track.search_query, match.reason)
             return None, SkipReason.NO_MATCH
 
         if match.confidence is MatchConfidence.LOW:
             logger.warning(
                 "Low confidence match for '%s': %s",
-                spotify_track.search_query,
+                external_track.search_query,
                 match.reason,
             )
 
@@ -537,7 +540,7 @@ class MetadataExtractorService:
             logger.warning(
                 "Could not fetch %s for '%s': %s",
                 match.video_id,
-                spotify_track.search_query,
+                external_track.search_query,
                 e,
             )
             return None, SkipReason.NO_MATCH

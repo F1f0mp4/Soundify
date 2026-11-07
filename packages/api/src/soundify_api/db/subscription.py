@@ -19,6 +19,7 @@ class SubscriptionFields(TypedDict, total=False):
     """Partial update fields for a subscription."""
 
     enabled: bool
+    max_items: int | None
     name: str
     thumbnail_url: str | None
     last_synced_at: datetime
